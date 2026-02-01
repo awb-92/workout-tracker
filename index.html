@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adam's Health Journey</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gray: {
+              750: '#2d3748'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // SVG Icon Components
+    const Calendar = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+        <line x1="16" x2="16" y1="2" y2="6"/>
+        <line x1="8" x2="8" y1="2" y2="6"/>
+        <line x1="3" x2="21" y1="10" y2="10"/>
+      </svg>
+    );
+
+    const Plus = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 12h14"/>
+        <path d="M12 5v14"/>
+      </svg>
+    );
+
+    const TrendingUp = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+        <polyline points="16 7 22 7 22 13"/>
+      </svg>
+    );
+
+    const Target = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <circle cx="12" cy="12" r="6"/>
+        <circle cx="12" cy="12" r="2"/>
+      </svg>
+    );
+
+    const Dumbbell = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m6.5 6.5 11 11"/>
+        <path d="m21 21-1-1"/>
+        <path d="m3 3 1 1"/>
+        <path d="m18 22 4-4"/>
+        <path d="m2 6 4-4"/>
+        <path d="m3 10 7-7"/>
+        <path d="m14 21 7-7"/>
+      </svg>
+    );
+
+    const Square = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+      </svg>
+    );
+
+    const CheckSquare = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2"/>
+        <path d="m9 12 2 2 4-4"/>
+      </svg>
+    );
+
+    const Timer = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="10" x2="14" y1="2" y2="2"/>
+        <line x1="12" x2="15" y1="14" y2="11"/>
+        <circle cx="12" cy="14" r="8"/>
+      </svg>
+    );
+
+    const ExternalLink = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <polyline points="15 3 21 3 21 9"/>
+        <line x1="10" x2="21" y1="14" y2="3"/>
+      </svg>
+    );
+
+    const FileText = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" x2="8" y1="13" y2="13"/>
+        <line x1="16" x2="8" y1="17" y2="17"/>
+        <line x1="10" x2="8" y1="9" y2="9"/>
+      </svg>
+    );
+
+    const BarChart3 = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18"/>
+        <path d="M18 17V9"/>
+        <path d="M13 17V5"/>
+        <path d="M8 17v-3"/>
+      </svg>
+    );
+
+    const Check = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    );
+
+    const Download = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" x2="12" y1="15" y2="3"/>
+      </svg>
+    );
+
+    const ChevronRight = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m9 18 6-6-6-6"/>
+      </svg>
+    );
+
+    const Bell = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+      </svg>
+    );
+
+    const ChevronDown = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m6 9 6 6 6-6"/>
+      </svg>
+    );
+
+    const ChevronUp = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m18 15-6-6-6 6"/>
+      </svg>
+    );
+
+    const Upload = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" x2="12" y1="3" y2="15"/>
+      </svg>
+    );
+
+    const WorkoutTracker = () => {
+      const [currentView, setCurrentView] = useState('home');
+      const [workouts, setWorkouts] = useState([]);
+      const [activeWorkout, setActiveWorkout] = useState(null);
+      const [startWeight] = useState(188);
+      const [goalWeight] = useState(155);
+      const [currentWeight, setCurrentWeight] = useState(188);
+      const [weightEntries, setWeightEntries] = useState([]);
+      const [strengthTests, setStrengthTests] = useState([]);
+      const [isListening, setIsListening] = useState(false);
+      const [restTimer, setRestTimer] = useState(null);
+      const [restTimeLeft, setRestTimeLeft] = useState(0);
+      const [restType, setRestType] = useState('set');
+      const [notes, setNotes] = useState('');
+      const [warmupComplete, setWarmupComplete] = useState(false);
+      const [warmupExpanded, setWarmupExpanded] = useState(true);
+      const recognitionRef = useRef(null);
+      const restIntervalRef = useRef(null);
+      const fileInputRef = useRef(null);
+
+      const baselineStats = {
+        pushUps: 16,
+        splitSquats: 15,
+        plank: 60,
+        deepSquat: 60
+      };
+
+      const targetStats = {
+        pushUps: 30,
+        splitSquats: 20,
+        plank: 120,
+        deepSquat: 180
+      };
+
+      useEffect(() => {
+        const saved = localStorage.getItem('workoutData');
+        if (saved) {
+          const data = JSON.parse(saved);
+          setWorkouts(data.workouts || []);
+          setCurrentWeight(data.currentWeight || 188);
+          setWeightEntries(data.weightEntries || []);
+          setStrengthTests(data.strengthTests || []);
+          setNotes(data.notes || '');
+        } else {
+          setCurrentWeight(188);
+        }
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          recognitionRef.current = new SpeechRecognition();
+          recognitionRef.current.continuous = false;
+          recognitionRef.current.interimResults = false;
+          recognitionRef.current.lang = 'en-US';
+        }
+
+        return () => {
+          if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+        };
+      }, []);
+
+      useEffect(() => {
+        const dataToSave = {
+          workouts,
+          currentWeight,
+          weightEntries,
+          strengthTests,
+          notes
+        };
+        localStorage.setItem('workoutData', JSON.stringify(dataToSave));
+      }, [workouts, currentWeight, weightEntries, strengthTests, notes]);
+
+      const exportData = () => {
+        const dataToExport = {
+          workouts,
+          currentWeight,
+          weightEntries,
+          strengthTests,
+          notes,
+          exportDate: new Date().toISOString()
+        };
+        const dataStr = JSON.stringify(dataToExport, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `workout-data-${new Date().toISOString().split('T')[0]}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const importData = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const importedData = JSON.parse(e.target.result);
+
+            if (!importedData.workouts || !Array.isArray(importedData.workouts)) {
+              alert('Invalid backup file format. Please select a valid workout data backup.');
+              return;
+            }
+
+            const confirmMsg = `This will restore data from ${new Date(importedData.exportDate).toLocaleDateString()}.\n\nCurrent data:\n- ${workouts.length} workouts\n- ${weightEntries.length} weight entries\n\nBackup contains:\n- ${importedData.workouts.length} workouts\n- ${importedData.weightEntries?.length || 0} weight entries\n\nContinue?`;
+
+            if (confirm(confirmMsg)) {
+              setWorkouts(importedData.workouts || []);
+              setCurrentWeight(importedData.currentWeight || 188);
+              setWeightEntries(importedData.weightEntries || []);
+              setStrengthTests(importedData.strengthTests || []);
+              setNotes(importedData.notes || '');
+
+              alert('Data restored successfully!');
+            }
+          } catch (error) {
+            alert('Error reading backup file. Please make sure it\'s a valid JSON file.');
+            console.error('Import error:', error);
+          }
+        };
+
+        reader.readAsText(file);
+        event.target.value = '';
+      };
+
+      const workoutTemplates = {
+        'A': {
+          name: 'Workout A - Strength',
+          exercises: [
+            { name: 'Push-ups', sets: 5, reps: 8, notes: 'Stop at 8 even if you have more', videoUrl: null, isTimeBased: false },
+            { name: 'Bodyweight squats', sets: 4, reps: '10-20', notes: '', videoUrl: null, isTimeBased: false },
+            { name: 'Floor Y-T-W', sets: 4, reps: '8-12', notes: 'Slow and strict', videoUrl: 'https://www.youtube.com/watch?v=QdGTI4Lshg4', isTimeBased: false },
+            { name: 'Dead bug', sets: 3, reps: '8/side', notes: '', videoUrl: 'https://youtube.com/shorts/bsOYjx22OSc?si=K9s6OziBNQtvNzrm', isTimeBased: false },
+            { name: 'Side plank', sets: 2, reps: '20-40s/side', notes: '', videoUrl: 'https://youtube.com/shorts/fzLeV8X0Gb8?si=dBJ9Z5uIDyMAlumt', isTimeBased: true }
+          ]
+        },
+        'B': {
+          name: 'Workout B - Volume + Legs',
+          exercises: [
+            { name: 'Incline push-ups', sets: 4, reps: '10-15', notes: 'Pick incline where 10 feels solid', videoUrl: null, isTimeBased: false },
+            { name: 'Split squats', sets: 4, reps: '8-12/leg', notes: '1 rep = both legs', videoUrl: 'https://youtube.com/shorts/YuLqw3kHPaw?si=cOEtpu_goBTVfl5r', isTimeBased: false },
+            { name: 'Glute bridge', sets: 3, reps: '12-20', notes: '', videoUrl: 'https://youtube.com/shorts/X_IGw8U_e38?si=qfttk2lZ8qSvGvb8', isTimeBased: false },
+            { name: 'Hollow/tuck hold', sets: 5, reps: '10-20s', notes: '', videoUrl: 'https://www.youtube.com/shorts/Xk-JcNj6lfY', isTimeBased: true }
+          ]
+        },
+        'A-Progress': {
+          name: 'Workout A - Progress Day',
+          exercises: [
+            { name: 'Push-ups', sets: 4, reps: 9, notes: 'If form breaks, finish on incline', videoUrl: null, isTimeBased: false },
+            { name: 'Bodyweight squats', sets: 4, reps: '10-20', notes: '', videoUrl: null, isTimeBased: false },
+            { name: 'Floor Y-T-W', sets: 4, reps: '8-12', notes: 'Slow and strict', videoUrl: 'https://www.youtube.com/watch?v=QdGTI4Lshg4', isTimeBased: false },
+            { name: 'Dead bug', sets: 3, reps: '8/side', notes: '', videoUrl: 'https://youtube.com/shorts/bsOYjx22OSc?si=K9s6OziBNQtvNzrm', isTimeBased: false },
+            { name: 'Side plank', sets: 2, reps: '20-40s/side', notes: '', videoUrl: 'https://youtube.com/shorts/fzLeV8X0Gb8?si=dBJ9Z5uIDyMAlumt', isTimeBased: true }
+          ]
+        },
+        'Strength-Test': {
+          name: 'Strength Test (Monthly)',
+          exercises: [
+            { name: 'Push-ups (max)', sets: 1, reps: 'max', notes: 'To technical failure', videoUrl: null, isTimeBased: false },
+            { name: 'Split squats (max/leg)', sets: 1, reps: 'max', notes: 'Each leg to failure', videoUrl: 'https://youtube.com/shorts/YuLqw3kHPaw?si=cOEtpu_goBTVfl5r', isTimeBased: false },
+            { name: 'Plank (max time)', sets: 1, reps: 'max', notes: 'Hard-style plank', videoUrl: null, isTimeBased: true },
+            { name: 'Deep squat hold (max time)', sets: 1, reps: 'max', notes: 'Heels down if possible', videoUrl: null, isTimeBased: true }
+          ]
+        }
+      };
+
+      const progressPercentage = ((startWeight - currentWeight) / (startWeight - goalWeight)) * 100;
+      const completedWorkouts = workouts.length;
+      const targetWorkouts = 72;
+
+      const getLatestStrengthStats = () => {
+        let latestPushUps = baselineStats.pushUps;
+        let latestSplitSquats = baselineStats.splitSquats;
+        let latestPlank = baselineStats.plank;
+        let latestDeepSquat = baselineStats.deepSquat;
+
+        strengthTests.forEach(test => {
+          if (test.pushUps) latestPushUps = Math.max(latestPushUps, test.pushUps);
+          if (test.splitSquats) latestSplitSquats = Math.max(latestSplitSquats, test.splitSquats);
+          if (test.plank) latestPlank = Math.max(latestPlank, test.plank);
+          if (test.deepSquat) latestDeepSquat = Math.max(latestDeepSquat, test.deepSquat);
+        });
+
+        return { latestPushUps, latestSplitSquats, latestPlank, latestDeepSquat };
+      };
+
+      const { latestPushUps, latestSplitSquats, latestPlank, latestDeepSquat } = getLatestStrengthStats();
+
+      const pushUpProgress = ((latestPushUps - baselineStats.pushUps) / (targetStats.pushUps - baselineStats.pushUps)) * 100;
+      const splitSquatProgress = ((latestSplitSquats - baselineStats.splitSquats) / (targetStats.splitSquats - baselineStats.splitSquats)) * 100;
+      const plankProgress = ((latestPlank - baselineStats.plank) / (targetStats.plank - baselineStats.plank)) * 100;
+      const deepSquatProgress = ((latestDeepSquat - baselineStats.deepSquat) / (targetStats.deepSquat - baselineStats.deepSquat)) * 100;
+
+      const strengthProgress = (pushUpProgress + splitSquatProgress + plankProgress + deepSquatProgress) / 4;
+
+      const getRecommendedWorkout = () => {
+        const lastWorkout = workouts[0];
+        const dayOfWeek = new Date().getDay();
+
+        if (!lastWorkout) {
+          if (dayOfWeek === 1 || dayOfWeek === 5) return 'A';
+          if (dayOfWeek === 3) return 'B';
+          return null;
+        }
+
+        const lastTemplate = lastWorkout.template;
+        const daysSinceLastWorkout = Math.floor((new Date() - new Date(lastWorkout.date)) / (1000 * 60 * 60 * 24));
+
+        if (daysSinceLastWorkout === 0) return null;
+
+        if (lastTemplate === 'A') return 'B';
+        if (lastTemplate === 'B') return 'A-Progress';
+        if (lastTemplate === 'A-Progress') return 'A';
+
+        return 'A';
+      };
+
+      const needsStrengthTest = () => {
+        if (strengthTests.length === 0) return true;
+        const lastTest = strengthTests[0];
+        const daysSinceTest = Math.floor((new Date() - new Date(lastTest.date)) / (1000 * 60 * 60 * 24));
+        return daysSinceTest >= 28;
+      };
+
+      const startWorkout = (templateKey) => {
+        const template = workoutTemplates[templateKey];
+        setActiveWorkout({
+          template: templateKey,
+          name: template.name,
+          startTime: new Date(),
+          exercises: template.exercises.map(ex => ({
+            ...ex,
+            completed: false,
+            actualSets: Array(ex.sets).fill().map(() => ({ reps: '', notes: '' }))
+          }))
+        });
+        setWarmupComplete(false);
+        setWarmupExpanded(true);
+        setCurrentView('workout');
+      };
+
+      const updateSet = (exerciseIdx, setIdx, field, value) => {
+        setActiveWorkout(prev => {
+          const updated = { ...prev };
+          updated.exercises[exerciseIdx].actualSets[setIdx][field] = value;
+          return updated;
+        });
+
+        if (field === 'reps' && value && value !== '') {
+          const exercise = activeWorkout.exercises[exerciseIdx];
+          const isLastSet = setIdx === exercise.sets - 1;
+
+          if (!isLastSet) {
+            setTimeout(() => {
+              startRestTimer(90, 'set');
+            }, 100);
+          } else {
+            const allPreviousSetsComplete = exercise.actualSets
+              .slice(0, -1)
+              .every(set => set.reps && set.reps !== '');
+
+            if (allPreviousSetsComplete) {
+              setTimeout(() => {
+                toggleExerciseComplete(exerciseIdx);
+              }, 200);
+            }
+          }
+        }
+      };
+
+      const startRestTimer = (seconds = 90, type = 'set') => {
+        if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+
+        setRestTimer(seconds);
+        setRestTimeLeft(seconds);
+        setRestType(type);
+
+        const halfwayPoint = Math.floor(seconds / 2);
+
+        restIntervalRef.current = setInterval(() => {
+          setRestTimeLeft(prev => {
+            if (prev === halfwayPoint) {
+              if (navigator.vibrate) navigator.vibrate(100);
+            }
+
+            if (prev <= 1) {
+              clearInterval(restIntervalRef.current);
+              setRestTimer(null);
+              if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      };
+
+      const cancelRestTimer = () => {
+        if (restIntervalRef.current) clearInterval(restIntervalRef.current);
+        setRestTimer(null);
+        setRestTimeLeft(0);
+        setRestType('set');
+      };
+
+      const toggleExerciseComplete = (exerciseIdx) => {
+        setActiveWorkout(prev => {
+          const updated = { ...prev };
+          updated.exercises[exerciseIdx].completed = !updated.exercises[exerciseIdx].completed;
+          return updated;
+        });
+
+        const justCompleted = !activeWorkout.exercises[exerciseIdx].completed;
+        const hasNextExercise = exerciseIdx < activeWorkout.exercises.length - 1;
+
+        if (justCompleted && hasNextExercise) {
+          setTimeout(() => {
+            startRestTimer(120, 'exercise');
+          }, 100);
+        }
+
+        setTimeout(() => {
+          const nextIncomplete = activeWorkout.exercises.findIndex((ex, idx) => idx > exerciseIdx && !ex.completed);
+          if (nextIncomplete !== -1) {
+            const element = document.getElementById(`exercise-${nextIncomplete}`);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }, 300);
+      };
+
+      const finishWorkout = () => {
+        const completed = {
+          ...activeWorkout,
+          endTime: new Date(),
+          date: new Date().toISOString()
+        };
+
+        const updatedWorkouts = [completed, ...workouts];
+        setWorkouts(updatedWorkouts);
+
+        if (completed.template === 'Strength-Test') {
+          const testResults = {
+            date: new Date().toISOString(),
+            pushUps: parseInt(completed.exercises[0]?.actualSets[0]?.reps) || 0,
+            splitSquats: parseInt(completed.exercises[1]?.actualSets[0]?.reps) || 0,
+            plank: parseInt(completed.exercises[2]?.actualSets[0]?.reps) || 0,
+            deepSquat: parseInt(completed.exercises[3]?.actualSets[0]?.reps) || 0
+          };
+          setStrengthTests([testResults, ...strengthTests]);
+        }
+
+        exportData();
+
+        setActiveWorkout(null);
+        setWarmupComplete(false);
+        setCurrentView('home');
+      };
+
+      const submitWeight = () => {
+        const newEntry = {
+          date: new Date().toISOString(),
+          weight: currentWeight
+        };
+        setWeightEntries([newEntry, ...weightEntries]);
+      };
+
+      const adjustWeight = (delta) => {
+        setCurrentWeight(prev => Math.max(100, Math.min(300, prev + delta)));
+      };
+
+      if (currentView === 'workout' && activeWorkout) {
+        const currentExerciseIndex = activeWorkout.exercises.findIndex(ex => !ex.completed);
+        const allCompleted = currentExerciseIndex === -1;
+
+        return (
+          <div className="min-h-screen bg-gray-900 pb-32" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sticky top-0 z-10 shadow-lg">
+              <div className="flex justify-between items-center mb-2">
+                <h2 className="text-xl font-bold">{activeWorkout.name}</h2>
+                <span className="text-sm opacity-90">
+                  {Math.floor((new Date() - activeWorkout.startTime) / 60000)} min
+                </span>
+              </div>
+
+              {restTimer !== null && (
+                <div className="mb-2">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-sm font-semibold">
+                      {restType === 'exercise' ? '🌟 Transition Break' : '⏱️ Rest Period'}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-bold">
+                        {Math.floor(restTimeLeft / 60)}:{(restTimeLeft % 60).toString().padStart(2, '0')}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const newTime = restTimeLeft + 30;
+                          setRestTimer(restTimer + 30);
+                          setRestTimeLeft(newTime);
+                        }}
+                        className="px-2 py-1 bg-green-600 bg-opacity-80 rounded text-xs hover:bg-opacity-100"
+                      >
+                        +30s
+                      </button>
+                      <button
+                        onClick={cancelRestTimer}
+                        className="px-3 py-1 bg-white bg-opacity-20 rounded text-xs hover:bg-opacity-30"
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  </div>
+                  <div className="w-full bg-blue-800 rounded-full h-2">
+                    <div
+                      className="bg-yellow-400 h-2 rounded-full transition-all"
+                      style={{
+                        width: `${100 - (restTimeLeft / restTimer * 100)}%`,
+                        transition: 'width 1s linear'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-2">
+                <div className="text-center text-xs text-gray-200 mb-1 opacity-90">
+                  Manual Rest Timers
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => startRestTimer(60, 'set')}
+                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-50 text-white rounded-lg font-semibold text-xs hover:bg-opacity-70"
+                  >
+                    60s
+                  </button>
+                  <button
+                    onClick={() => startRestTimer(90, 'set')}
+                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-70 text-white rounded-lg font-semibold text-xs hover:bg-opacity-90 border border-yellow-400"
+                  >
+                    90s ⭐
+                  </button>
+                  <button
+                    onClick={() => startRestTimer(120, 'set')}
+                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-50 text-white rounded-lg font-semibold text-xs hover:bg-opacity-70"
+                  >
+                    2m
+                  </button>
+                </div>
+              </div>
+
+              <div className="w-full bg-blue-800 rounded-full h-2 mb-2">
+                <div
+                  className="bg-green-400 h-2 rounded-full transition-all"
+                  style={{ width: `${(activeWorkout.exercises.filter(e => e.completed).length / activeWorkout.exercises.length) * 100}%` }}
+                />
+              </div>
+
+              <div className="bg-blue-800 bg-opacity-50 rounded-lg p-3 text-xs">
+                <p className="font-semibold mb-1">📋 Workout Flow:</p>
+                <p className="opacity-90">Complete ALL sets of one exercise before moving to the next. Rest 60-90s between sets. Take a 2-3 min break between exercises.</p>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {!warmupComplete && (
+                <div className="bg-orange-900 bg-opacity-30 border-2 border-orange-500 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-lg text-orange-300">🔥 Warm-up (6-8 min)</h3>
+                      <button
+                        onClick={() => setWarmupExpanded(!warmupExpanded)}
+                        className="text-orange-300"
+                      >
+                        {warmupExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => setWarmupComplete(true)}
+                      className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold text-sm hover:bg-orange-700"
+                    >
+                      Complete
+                    </button>
+                  </div>
+
+                  {warmupExpanded && (
+                    <div className="space-y-2 text-sm text-gray-200">
+                      <p>• 1 min brisk march or jumping jacks</p>
+                      <p className="font-semibold">2 rounds of:</p>
+                      <p className="ml-4">• 8 hip hinges</p>
+                      <p className="ml-4">• 8 squat-to-stand</p>
+                      <p className="ml-4">• 10 scapular push-ups (small range)</p>
+                      <p className="ml-4">• 20-30s plank</p>
+                      <div className="flex gap-2 mt-3">
+                        <button
+                          onClick={() => startRestTimer(480, 'set')}
+                          className="flex-1 px-3 py-2 bg-orange-700 text-white rounded-lg font-semibold text-xs hover:bg-orange-800"
+                        >
+                          Start 8 min timer
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeWorkout.exercises.map((exercise, exIdx) => {
+                const isCurrentExercise = exIdx === currentExerciseIndex;
+                const isPastExercise = exercise.completed;
+                const isFutureExercise = !isCurrentExercise && !isPastExercise;
+
+                return (
+                  <div
+                    key={exIdx}
+                    id={`exercise-${exIdx}`}
+                    className={`bg-gray-800 rounded-lg shadow-lg p-4 border-2 transition-all ${
+                      isCurrentExercise ? 'border-blue-500' : isPastExercise ? 'border-green-600' : 'border-gray-700 opacity-60'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-bold text-gray-500 mr-1">#{exIdx + 1}</span>
+                          <button
+                            onClick={() => toggleExerciseComplete(exIdx)}
+                            className="flex-shrink-0"
+                          >
+                            {exercise.completed ? (
+                              <CheckSquare className="w-6 h-6 text-green-500" />
+                            ) : (
+                              <Square className="w-6 h-6 text-gray-600" />
+                            )}
+                          </button>
+                          <h3 className={`font-semibold text-lg text-white ${exercise.completed ? 'line-through text-gray-500' : ''}`}>
+                            {exercise.name}
+                          </h3>
+                          {exercise.videoUrl && (
+                            <a
+                              href={exercise.videoUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ml-2 text-blue-400 hover:text-blue-300"
+                              title="Watch form video"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                window.open(exercise.videoUrl, '_blank', 'noopener,noreferrer');
+                              }}
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                        {isCurrentExercise && (
+                          <div className="mt-1 text-xs font-semibold text-blue-400">
+                            ← CURRENT EXERCISE
+                          </div>
+                        )}
+                        <p className="text-sm text-gray-400">
+                          Target: {exercise.sets} × {exercise.reps}
+                        </p>
+                        {exercise.notes && (
+                          <p className="text-xs text-blue-400 mt-1">{exercise.notes}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      {exercise.actualSets.map((set, setIdx) => (
+                        <div key={setIdx} className="flex gap-2 items-center">
+                          <span className="text-sm font-medium text-gray-400 w-10 flex-shrink-0">Set {setIdx + 1}</span>
+                          {exercise.isTimeBased ? (
+                            <select
+                              value={set.reps}
+                              onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
+                              className="w-24 flex-shrink-0 px-2 py-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-lg font-semibold text-white"
+                              disabled={isFutureExercise}
+                            >
+                              <option value="">-</option>
+                              {Array.from({length: 120}, (_, i) => i + 1).map(seconds => {
+                                const mins = Math.floor(seconds / 60);
+                                const secs = seconds % 60;
+                                const display = mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `0:${secs.toString().padStart(2, '0')}`;
+                                return (
+                                  <option key={seconds} value={seconds}>{display}</option>
+                                );
+                              })}
+                            </select>
+                          ) : (
+                            <select
+                              value={set.reps}
+                              onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
+                              className="w-20 flex-shrink-0 px-2 py-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-lg font-semibold text-white"
+                              disabled={isFutureExercise}
+                            >
+                              <option value="">-</option>
+                              {Array.from({length: 50}, (_, i) => i + 1).map(num => (
+                                <option key={num} value={num}>{num}</option>
+                              ))}
+                            </select>
+                          )}
+                          <input
+                            type="text"
+                            placeholder="notes"
+                            value={set.notes}
+                            onChange={(e) => updateSet(exIdx, setIdx, 'notes', e.target.value)}
+                            className="flex-1 min-w-0 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500"
+                            disabled={isFutureExercise}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {exercise.completed && exIdx < activeWorkout.exercises.length - 1 && (
+                      <div className="mt-4 bg-gray-900 rounded-lg p-3 border border-gray-700">
+                        <p className="text-xs text-gray-400 text-center">
+                          💡 Transition timer auto-started (2 min). Use +30s button in header if you need more time.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setActiveWorkout(null);
+                    setCurrentView('home');
+                    cancelRestTimer();
+                  }}
+                  className="flex-1 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    finishWorkout();
+                    cancelRestTimer();
+                  }}
+                  className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                >
+                  Finish Workout
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (currentView === 'weightChart') {
+        const sortedEntries = [...weightEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        return (
+          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
+              <h2 className="text-xl font-bold">Weight Progress</h2>
+            </div>
+
+            <div className="p-4">
+              {weightEntries.length === 0 ? (
+                <p className="text-center text-gray-400 py-8">No weight entries yet. Log your first weigh-in!</p>
+              ) : (
+                <>
+                  <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+                    <div className="flex justify-between text-xs text-gray-400 mb-2">
+                      <span>Start: {startWeight} lb</span>
+                      <span>Goal: {goalWeight} lb</span>
+                    </div>
+                    <div className="relative h-48 bg-gray-700 rounded">
+                      {sortedEntries.map((entry, idx) => {
+                        const percentage = ((entry.weight - goalWeight) / (startWeight - goalWeight)) * 100;
+                        const leftPosition = (idx / (sortedEntries.length - 1 || 1)) * 100;
+                        return (
+                          <div
+                            key={idx}
+                            className="absolute w-2 bg-green-400 rounded-full"
+                            style={{
+                              bottom: `${100 - Math.min(Math.max(percentage, 0), 100)}%`,
+                              left: `${leftPosition}%`,
+                              height: '8px',
+                              transform: 'translateX(-50%)'
+                            }}
+                            title={`${entry.weight} lb - ${new Date(entry.date).toLocaleDateString()}`}
+                          />
+                        );
+                      })}
+                      {sortedEntries.length > 1 && sortedEntries.map((entry, idx) => {
+                        if (idx === 0) return null;
+                        const prevEntry = sortedEntries[idx - 1];
+                        const percentage = ((entry.weight - goalWeight) / (startWeight - goalWeight)) * 100;
+                        const prevPercentage = ((prevEntry.weight - goalWeight) / (startWeight - goalWeight)) * 100;
+                        const leftPosition = (idx / (sortedEntries.length - 1)) * 100;
+                        const prevLeftPosition = ((idx - 1) / (sortedEntries.length - 1)) * 100;
+
+                        return (
+                          <svg
+                            key={`line-${idx}`}
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            style={{ overflow: 'visible' }}
+                          >
+                            <line
+                              x1={`${prevLeftPosition}%`}
+                              y1={`${100 - Math.min(Math.max(prevPercentage, 0), 100)}%`}
+                              x2={`${leftPosition}%`}
+                              y2={`${100 - Math.min(Math.max(percentage, 0), 100)}%`}
+                              stroke="#4ade80"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Weight History</h3>
+                    {weightEntries.map((entry, idx) => {
+                      const prevWeight = idx < weightEntries.length - 1 ? weightEntries[idx + 1].weight : startWeight;
+                      const change = entry.weight - prevWeight;
+
+                      return (
+                        <div key={idx} className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex justify-between items-center">
+                          <div>
+                            <p className="text-white font-semibold">{entry.weight} lb</p>
+                            <p className="text-xs text-gray-400">{new Date(entry.date).toLocaleDateString()}</p>
+                          </div>
+                          {change !== 0 && (
+                            <div className={`text-sm font-semibold ${change < 0 ? 'text-green-400' : 'text-red-400'}`}>
+                              {change > 0 ? '+' : ''}{change.toFixed(1)} lb
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      if (currentView === 'notes') {
+        return (
+          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
+              <h2 className="text-xl font-bold">Notes & Resources</h2>
+            </div>
+
+            <div className="p-4">
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add workout links, nutrition info, progress notes, or any other information here..."
+                className="w-full h-96 bg-gray-800 text-white border border-gray-700 rounded-lg p-4 text-sm"
+                style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
+              />
+              <p className="text-xs text-gray-500 mt-2">Your notes are automatically saved</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (currentView === 'history') {
+        return (
+          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
+              <h2 className="text-xl font-bold">Workout History</h2>
+            </div>
+
+            <div className="p-4 space-y-3">
+              {workouts.length === 0 ? (
+                <p className="text-center text-gray-400 py-8">No workouts yet. Start your first one!</p>
+              ) : (
+                workouts.map((workout, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentView(`workout-detail-${idx}`)}
+                    className="w-full bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700 text-left hover:border-blue-500 transition"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-semibold text-white">{workout.name}</h3>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-400">
+                          {new Date(workout.date).toLocaleDateString()}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {new Date(workout.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300">
+                      Duration: {Math.floor((new Date(workout.endTime) - new Date(workout.startTime)) / 60000)} min
+                    </p>
+                    <div className="mt-2 text-xs text-gray-500">
+                      {workout.exercises.filter(e => e.completed).length} / {workout.exercises.length} exercises completed
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      if (currentView.startsWith('workout-detail-')) {
+        const workoutIndex = parseInt(currentView.split('-')[2]);
+        const workout = workouts[workoutIndex];
+
+        return (
+          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+              <button onClick={() => setCurrentView('history')} className="mb-2 text-sm opacity-90">← Back to History</button>
+              <h2 className="text-xl font-bold">{workout.name}</h2>
+              <div className="flex gap-4 text-sm mt-2 opacity-90">
+                <span>{new Date(workout.date).toLocaleDateString()}</span>
+                <span>{new Date(workout.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                <span>{Math.floor((new Date(workout.endTime) - new Date(workout.startTime)) / 60000)} min</span>
+              </div>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {workout.exercises.map((exercise, exIdx) => (
+                <div
+                  key={exIdx}
+                  className={`bg-gray-800 rounded-lg shadow-lg p-4 border ${
+                    exercise.completed ? 'border-green-600' : 'border-gray-700'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    {exercise.completed ? (
+                      <CheckSquare className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <Square className="w-5 h-5 text-gray-600" />
+                    )}
+                    <h3 className="font-semibold text-lg text-white">
+                      {exercise.name}
+                    </h3>
+                  </div>
+
+                  <p className="text-sm text-gray-400 mb-2">
+                    Target: {exercise.sets} × {exercise.reps}
+                  </p>
+
+                  <div className="space-y-1">
+                    {exercise.actualSets.map((set, setIdx) => {
+                      let displayValue = set.reps || '-';
+                      if (exercise.isTimeBased && set.reps) {
+                        const totalSeconds = parseInt(set.reps);
+                        if (!isNaN(totalSeconds)) {
+                          const mins = Math.floor(totalSeconds / 60);
+                          const secs = totalSeconds % 60;
+                          displayValue = `${mins}:${secs.toString().padStart(2, '0')}`;
+                        }
+                      }
+
+                      return (
+                        <div key={setIdx} className="flex items-center gap-2 text-sm">
+                          <span className="text-gray-500 w-16">Set {setIdx + 1}:</span>
+                          <span className="text-white font-semibold">
+                            {displayValue} {exercise.isTimeBased ? '' : 'reps'}
+                          </span>
+                          {set.notes && (
+                            <span className="text-gray-400 text-xs ml-2">({set.notes})</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      }
+
+      const recommendedWorkout = getRecommendedWorkout();
+      const needsTest = needsStrengthTest();
+
+      return (
+        <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+            <div className="space-y-2">
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Weight</span>
+                  <span>{currentWeight} → {goalWeight} lb</span>
+                </div>
+                <div className="w-full bg-blue-800 rounded-full h-2">
+                  <div
+                    className="bg-green-400 h-2 rounded-full transition-all"
+                    style={{ width: `${Math.min(Math.max(progressPercentage, 0), 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Strength</span>
+                  <span>Push:{latestPushUps} Squat:{latestSplitSquats} Plank:{latestPlank}s Deep:{latestDeepSquat}s</span>
+                </div>
+                <div className="w-full bg-blue-800 rounded-full h-2">
+                  <div
+                    className="bg-purple-400 h-2 rounded-full transition-all"
+                    style={{ width: `${Math.min(Math.max(strengthProgress, 0), 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>Workouts</span>
+                  <span>{completedWorkouts} / {targetWorkouts}</span>
+                </div>
+                <div className="w-full bg-blue-800 rounded-full h-2">
+                  <div
+                    className="bg-yellow-400 h-2 rounded-full transition-all"
+                    style={{ width: `${Math.min((completedWorkouts / targetWorkouts) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {(recommendedWorkout || needsTest) && (
+            <div className="p-4 pb-2">
+              {needsTest && (
+                <div className="bg-purple-900 bg-opacity-30 border border-purple-500 rounded-lg p-3 mb-2 flex items-start gap-3">
+                  <Bell className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-purple-300">Time for Monthly Strength Test!</p>
+                    <p className="text-xs text-gray-300 mt-1">Test your maxes to track progress</p>
+                  </div>
+                </div>
+              )}
+              {recommendedWorkout && !needsTest && (
+                <div className="bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg p-3 flex items-start gap-3">
+                  <Bell className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-blue-300">Recommended Today</p>
+                    <p className="text-xs text-gray-300 mt-1">
+                      {workoutTemplates[recommendedWorkout].name}
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="p-4 grid grid-cols-2 gap-3">
+            <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-2 mb-2">
+                <Target className="w-4 h-4 text-blue-400" />
+                <span className="text-xs text-gray-400">Current Weight</span>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <button
+                  onClick={() => adjustWeight(-1)}
+                  className="p-1 bg-gray-700 rounded hover:bg-gray-600"
+                >
+                  <span className="text-white text-sm">-1</span>
+                </button>
+                <button
+                  onClick={() => adjustWeight(-0.5)}
+                  className="p-1 bg-gray-700 rounded hover:bg-gray-600"
+                >
+                  <span className="text-white text-xs">-0.5</span>
+                </button>
+                <input
+                  type="number"
+                  value={currentWeight}
+                  onChange={(e) => setCurrentWeight(Number(e.target.value))}
+                  className="text-xl font-bold w-14 bg-transparent border-b border-gray-600 text-white text-center"
+                />
+                <span className="text-sm text-gray-400">lb</span>
+                <button
+                  onClick={() => adjustWeight(0.5)}
+                  className="p-1 bg-gray-700 rounded hover:bg-gray-600"
+                >
+                  <span className="text-white text-xs">+0.5</span>
+                </button>
+                <button
+                  onClick={() => adjustWeight(1)}
+                  className="p-1 bg-gray-700 rounded hover:bg-gray-600"
+                >
+                  <span className="text-white text-sm">+1</span>
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={submitWeight}
+                  className="flex-1 p-1.5 bg-green-600 rounded-lg hover:bg-green-700 flex items-center justify-center gap-1"
+                  title="Log weight"
+                >
+                  <Check className="w-3 h-3 text-white" />
+                  <span className="text-xs text-white">Log</span>
+                </button>
+                <button
+                  onClick={() => setCurrentView('weightChart')}
+                  className="flex-1 p-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-1"
+                >
+                  <BarChart3 className="w-3 h-3 text-white" />
+                  <span className="text-xs text-white">Chart</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-2 mb-1">
+                <Dumbbell className="w-4 h-4 text-green-400" />
+                <span className="text-xs text-gray-400">This Week</span>
+              </div>
+              <p className="text-2xl font-bold text-white">{workouts.filter(w => {
+                const workoutDate = new Date(w.date);
+                const weekAgo = new Date();
+                weekAgo.setDate(weekAgo.getDate() - 7);
+                return workoutDate >= weekAgo;
+              }).length}</p>
+              <p className="text-xs text-gray-500">workouts</p>
+            </div>
+          </div>
+
+          <div className="p-4 space-y-3">
+            <h2 className="font-semibold text-gray-300">Start Workout</h2>
+
+            {needsTest && (
+              <button
+                onClick={() => startWorkout('Strength-Test')}
+                className="w-full bg-purple-800 rounded-lg shadow-lg p-4 text-left hover:bg-purple-750 transition border-2 border-purple-500"
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-lg text-white">Strength Test (Monthly)</h3>
+                    <p className="text-sm text-purple-300">Test your maxes</p>
+                    <p className="text-xs text-gray-400 mt-1">4 exercises • ~20 min</p>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-purple-400" />
+                </div>
+              </button>
+            )}
+
+            <button
+              onClick={() => startWorkout('A')}
+              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
+                recommendedWorkout === 'A' ? 'border-blue-500 border-2' : 'border-gray-700'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-lg text-white">Workout A - Strength</h3>
+                  <p className="text-sm text-gray-400">Mon / Fri</p>
+                  <p className="text-xs text-gray-500 mt-1">5 exercises • ~45 min</p>
+                </div>
+                {recommendedWorkout === 'A' ? (
+                  <ChevronRight className="w-6 h-6 text-blue-400" />
+                ) : (
+                  <Plus className="w-6 h-6 text-blue-400" />
+                )}
+              </div>
+            </button>
+
+            <button
+              onClick={() => startWorkout('B')}
+              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
+                recommendedWorkout === 'B' ? 'border-blue-500 border-2' : 'border-gray-700'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-lg text-white">Workout B - Volume + Legs</h3>
+                  <p className="text-sm text-gray-400">Wed</p>
+                  <p className="text-xs text-gray-500 mt-1">4 exercises • ~45 min</p>
+                </div>
+                {recommendedWorkout === 'B' ? (
+                  <ChevronRight className="w-6 h-6 text-blue-400" />
+                ) : (
+                  <Plus className="w-6 h-6 text-blue-400" />
+                )}
+              </div>
+            </button>
+
+            <button
+              onClick={() => startWorkout('A-Progress')}
+              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
+                recommendedWorkout === 'A-Progress' ? 'border-blue-500 border-2' : 'border-gray-700'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-lg text-white">Workout A - Progress Day</h3>
+                  <p className="text-sm text-gray-400">Fri (alternate)</p>
+                  <p className="text-xs text-gray-500 mt-1">5 exercises • ~45 min</p>
+                </div>
+                {recommendedWorkout === 'A-Progress' ? (
+                  <ChevronRight className="w-6 h-6 text-blue-400" />
+                ) : (
+                  <Plus className="w-6 h-6 text-blue-400" />
+                )}
+              </div>
+            </button>
+          </div>
+
+          <div className="p-4 space-y-2">
+            <button
+              onClick={() => setCurrentView('history')}
+              className="w-full bg-gray-800 rounded-lg shadow-lg p-3 flex items-center gap-3 hover:bg-gray-750 transition border border-gray-700"
+            >
+              <Calendar className="w-5 h-5 text-gray-400" />
+              <span className="font-medium text-white">View History</span>
+            </button>
+
+            <button
+              onClick={() => setCurrentView('notes')}
+              className="w-full bg-gray-800 rounded-lg shadow-lg p-3 flex items-center gap-3 hover:bg-gray-750 transition border border-gray-700"
+            >
+              <FileText className="w-5 h-5 text-gray-400" />
+              <span className="font-medium text-white">Notes & Resources</span>
+            </button>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={exportData}
+                className="bg-gray-800 rounded-lg shadow-lg p-3 flex items-center justify-center gap-2 hover:bg-gray-750 transition border border-gray-700"
+              >
+                <Download className="w-5 h-5 text-green-400" />
+                <span className="font-medium text-white text-sm">Export</span>
+              </button>
+
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-gray-800 rounded-lg shadow-lg p-3 flex items-center justify-center gap-2 hover:bg-gray-750 transition border border-gray-700"
+              >
+                <Upload className="w-5 h-5 text-blue-400" />
+                <span className="font-medium text-white text-sm">Import</span>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={importData}
+                style={{ display: 'none' }}
+              />
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<WorkoutTracker />);
+  </script>
+</body>
+</html>
