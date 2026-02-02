@@ -197,6 +197,22 @@
       </svg>
     );
 
+    const Footprints = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/>
+        <path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/>
+        <path d="M16 17h4"/>
+        <path d="M4 13h4"/>
+      </svg>
+    );
+
+    const Pill = ({ className }) => (
+      <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
+        <path d="m8.5 8.5 7 7"/>
+      </svg>
+    );
+
     const WorkoutTracker = () => {
       const [currentView, setCurrentView] = useState('home');
       const [workouts, setWorkouts] = useState([]);
@@ -213,6 +229,9 @@
       const [notes, setNotes] = useState('');
       const [warmupComplete, setWarmupComplete] = useState(false);
       const [warmupExpanded, setWarmupExpanded] = useState(true);
+      const [stepsEntries, setStepsEntries] = useState([]);
+      const [currentSteps, setCurrentSteps] = useState('');
+      const [supplements, setSupplements] = useState({ date: '', vitaminDAM: false, vitaminDPM: false });
       const recognitionRef = useRef(null);
       const restIntervalRef = useRef(null);
       const fileInputRef = useRef(null);
@@ -231,6 +250,8 @@
         deepSquat: 180
       };
 
+      const getTodayDateString = () => new Date().toISOString().split('T')[0];
+
       useEffect(() => {
         const saved = localStorage.getItem('workoutData');
         if (saved) {
@@ -240,8 +261,19 @@
           setWeightEntries(data.weightEntries || []);
           setStrengthTests(data.strengthTests || []);
           setNotes(data.notes || '');
+          setStepsEntries(data.stepsEntries || []);
+
+          // Load supplements and reset if it's a new day
+          const savedSupplements = data.supplements || { date: '', vitaminDAM: false, vitaminDPM: false };
+          const today = getTodayDateString();
+          if (savedSupplements.date === today) {
+            setSupplements(savedSupplements);
+          } else {
+            setSupplements({ date: today, vitaminDAM: false, vitaminDPM: false });
+          }
         } else {
           setCurrentWeight(188);
+          setSupplements({ date: getTodayDateString(), vitaminDAM: false, vitaminDPM: false });
         }
 
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -263,10 +295,12 @@
           currentWeight,
           weightEntries,
           strengthTests,
-          notes
+          notes,
+          stepsEntries,
+          supplements
         };
         localStorage.setItem('workoutData', JSON.stringify(dataToSave));
-      }, [workouts, currentWeight, weightEntries, strengthTests, notes]);
+      }, [workouts, currentWeight, weightEntries, strengthTests, notes, stepsEntries, supplements]);
 
       const exportData = () => {
         const dataToExport = {
@@ -275,6 +309,8 @@
           weightEntries,
           strengthTests,
           notes,
+          stepsEntries,
+          supplements,
           exportDate: new Date().toISOString()
         };
         const dataStr = JSON.stringify(dataToExport, null, 2);
@@ -309,6 +345,15 @@
               setWeightEntries(importedData.weightEntries || []);
               setStrengthTests(importedData.strengthTests || []);
               setNotes(importedData.notes || '');
+              setStepsEntries(importedData.stepsEntries || []);
+              if (importedData.supplements) {
+                const today = getTodayDateString();
+                if (importedData.supplements.date === today) {
+                  setSupplements(importedData.supplements);
+                } else {
+                  setSupplements({ date: today, vitaminDAM: false, vitaminDPM: false });
+                }
+              }
 
               alert('Data restored successfully!');
             }
@@ -366,6 +411,19 @@
       const progressPercentage = ((startWeight - currentWeight) / (startWeight - goalWeight)) * 100;
       const completedWorkouts = workouts.filter(w => w.template !== 'Strength-Test').length;
       const targetWorkouts = 72;
+
+      // Steps calculations
+      const stepsGoal = 8000;
+      const getWeeklyStepsAverage = () => {
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const recentEntries = stepsEntries.filter(e => new Date(e.date) >= weekAgo);
+        if (recentEntries.length === 0) return 0;
+        const total = recentEntries.reduce((sum, e) => sum + e.steps, 0);
+        return Math.round(total / recentEntries.length);
+      };
+      const weeklyStepsAverage = getWeeklyStepsAverage();
+      const stepsProgress = (weeklyStepsAverage / stepsGoal) * 100;
 
       const getLatestStrengthStats = () => {
         let latestPushUps = baselineStats.pushUps;
@@ -573,6 +631,26 @@
           const updatedWorkouts = workouts.filter((_, i) => i !== idx);
           setWorkouts(updatedWorkouts);
         }
+      };
+
+      const submitSteps = () => {
+        const steps = parseInt(currentSteps);
+        if (isNaN(steps) || steps < 0) return;
+        const newEntry = {
+          date: new Date().toISOString(),
+          steps: steps
+        };
+        setStepsEntries([newEntry, ...stepsEntries]);
+        setCurrentSteps('');
+      };
+
+      const toggleSupplement = (type) => {
+        const today = getTodayDateString();
+        setSupplements(prev => ({
+          ...prev,
+          date: today,
+          [type]: !prev[type]
+        }));
       };
 
       if (currentView === 'workout' && activeWorkout) {
@@ -949,6 +1027,113 @@
         );
       }
 
+      if (currentView === 'stepsChart') {
+        const sortedEntries = [...stepsEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const maxSteps = Math.max(stepsGoal, ...sortedEntries.map(e => e.steps));
+
+        return (
+          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
+              <h2 className="text-xl font-bold">Steps Progress</h2>
+            </div>
+
+            <div className="p-4">
+              {stepsEntries.length === 0 ? (
+                <p className="text-center text-gray-400 py-8">No steps entries yet. Log your first one!</p>
+              ) : (
+                <>
+                  <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+                    <div className="flex justify-between text-xs text-gray-400 mb-2">
+                      <span>0 steps</span>
+                      <span>Goal: {stepsGoal.toLocaleString()} steps</span>
+                    </div>
+                    <div className="relative h-48 bg-gray-700 rounded">
+                      {/* Goal line */}
+                      <div
+                        className="absolute w-full border-t-2 border-dashed border-green-500 opacity-50"
+                        style={{ bottom: `${(stepsGoal / maxSteps) * 100}%` }}
+                      >
+                        <span className="absolute right-0 -top-4 text-xs text-green-400">8k goal</span>
+                      </div>
+                      {sortedEntries.map((entry, idx) => {
+                        const percentage = (entry.steps / maxSteps) * 100;
+                        const leftPosition = (idx / (sortedEntries.length - 1 || 1)) * 100;
+                        const meetsGoal = entry.steps >= stepsGoal;
+                        return (
+                          <div
+                            key={idx}
+                            className={`absolute w-2 rounded-full ${meetsGoal ? 'bg-green-400' : 'bg-orange-400'}`}
+                            style={{
+                              bottom: `${Math.min(percentage, 100)}%`,
+                              left: `${leftPosition}%`,
+                              height: '8px',
+                              transform: 'translateX(-50%)'
+                            }}
+                            title={`${entry.steps.toLocaleString()} steps - ${new Date(entry.date).toLocaleDateString()}`}
+                          />
+                        );
+                      })}
+                      {sortedEntries.length > 1 && sortedEntries.map((entry, idx) => {
+                        if (idx === 0) return null;
+                        const prevEntry = sortedEntries[idx - 1];
+                        const percentage = (entry.steps / maxSteps) * 100;
+                        const prevPercentage = (prevEntry.steps / maxSteps) * 100;
+                        const leftPosition = (idx / (sortedEntries.length - 1)) * 100;
+                        const prevLeftPosition = ((idx - 1) / (sortedEntries.length - 1)) * 100;
+
+                        return (
+                          <svg
+                            key={`line-${idx}`}
+                            className="absolute inset-0 w-full h-full pointer-events-none"
+                            style={{ overflow: 'visible' }}
+                          >
+                            <line
+                              x1={`${prevLeftPosition}%`}
+                              y1={`${100 - Math.min(prevPercentage, 100)}%`}
+                              x2={`${leftPosition}%`}
+                              y2={`${100 - Math.min(percentage, 100)}%`}
+                              stroke="#fb923c"
+                              strokeWidth="2"
+                            />
+                          </svg>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-2 text-center">
+                      <span className="text-sm text-gray-400">Weekly Average: </span>
+                      <span className={`text-lg font-bold ${weeklyStepsAverage >= stepsGoal ? 'text-green-400' : 'text-orange-400'}`}>
+                        {weeklyStepsAverage.toLocaleString()} steps
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Steps History</h3>
+                    {stepsEntries.map((entry, idx) => {
+                      const meetsGoal = entry.steps >= stepsGoal;
+                      return (
+                        <div key={idx} className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex justify-between items-center">
+                          <div>
+                            <p className={`font-semibold ${meetsGoal ? 'text-green-400' : 'text-white'}`}>
+                              {entry.steps.toLocaleString()} steps
+                            </p>
+                            <p className="text-xs text-gray-400">{new Date(entry.date).toLocaleDateString()}</p>
+                          </div>
+                          {meetsGoal && (
+                            <span className="text-green-400 text-sm">✓ Goal met</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      }
+
       if (currentView === 'notes') {
         return (
           <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
@@ -1131,6 +1316,19 @@
 
               <div>
                 <div className="flex justify-between text-xs mb-1">
+                  <span>Steps (Weekly Avg)</span>
+                  <span>{weeklyStepsAverage.toLocaleString()} / {stepsGoal.toLocaleString()}</span>
+                </div>
+                <div className="w-full bg-blue-800 rounded-full h-2">
+                  <div
+                    className="bg-orange-400 h-2 rounded-full transition-all"
+                    style={{ width: `${Math.min(Math.max(stepsProgress, 0), 100)}%` }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex justify-between text-xs mb-1">
                   <span>Workouts</span>
                   <span>{completedWorkouts} / {targetWorkouts}</span>
                 </div>
@@ -1140,6 +1338,36 @@
                     style={{ width: `${Math.min((completedWorkouts / targetWorkouts) * 100, 100)}%` }}
                   />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Supplement Tracker */}
+          <div className="px-4 pt-4">
+            <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+              <div className="flex items-center gap-2 mb-2">
+                <Pill className="w-4 h-4 text-yellow-400" />
+                <span className="text-xs text-gray-400">Daily Supplements</span>
+              </div>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={supplements.vitaminDAM}
+                    onChange={() => toggleSupplement('vitaminDAM')}
+                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-yellow-500 focus:ring-yellow-500"
+                  />
+                  <span className="text-sm text-white">Vitamin D AM</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={supplements.vitaminDPM}
+                    onChange={() => toggleSupplement('vitaminDPM')}
+                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-yellow-500 focus:ring-yellow-500"
+                  />
+                  <span className="text-sm text-white">Vitamin D PM</span>
+                </label>
               </div>
             </div>
           </div>
@@ -1227,18 +1455,33 @@
               </div>
             </div>
 
-            <div className="col-span-1 bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700 flex flex-col justify-center">
-              <div className="flex items-center gap-1 mb-1">
-                <Dumbbell className="w-4 h-4 text-green-400" />
-                <span className="text-xs text-gray-400">This Week</span>
+            <div className="col-span-1 bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+              <div className="flex items-center gap-1 mb-2">
+                <Footprints className="w-4 h-4 text-orange-400" />
+                <span className="text-xs text-gray-400">Steps Today</span>
               </div>
-              <p className="text-2xl font-bold text-white">{workouts.filter(w => {
-                const workoutDate = new Date(w.date);
-                const weekAgo = new Date();
-                weekAgo.setDate(weekAgo.getDate() - 7);
-                return workoutDate >= weekAgo;
-              }).length}</p>
-              <p className="text-xs text-gray-500">workouts</p>
+              <input
+                type="number"
+                value={currentSteps}
+                onChange={(e) => setCurrentSteps(e.target.value)}
+                placeholder="0"
+                className="w-full text-lg font-bold bg-transparent border-b border-gray-600 text-white text-center mb-2"
+              />
+              <div className="flex gap-1">
+                <button
+                  onClick={submitSteps}
+                  className="flex-1 p-1 bg-green-600 rounded hover:bg-green-700 flex items-center justify-center"
+                  title="Log steps"
+                >
+                  <Check className="w-3 h-3 text-white" />
+                </button>
+                <button
+                  onClick={() => setCurrentView('stepsChart')}
+                  className="flex-1 p-1 bg-orange-600 rounded hover:bg-orange-700 flex items-center justify-center"
+                >
+                  <BarChart3 className="w-3 h-3 text-white" />
+                </button>
+              </div>
             </div>
           </div>
 
