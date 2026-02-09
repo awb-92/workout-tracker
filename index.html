@@ -14,6 +14,20 @@
       theme: {
         extend: {
           colors: {
+            ios: {
+              bg: '#000000',
+              card: '#1C1C1E',
+              secondary: '#2C2C2E',
+              blue: '#0A84FF',
+              green: '#30D158',
+              red: '#FF453A',
+              orange: '#FF9F0A',
+              purple: '#BF5AF2',
+              yellow: '#FFD60A',
+              textSecondary: '#8E8E93',
+              textTertiary: '#48484A',
+              separator: 'rgba(60, 60, 67, 0.36)',
+            },
             gray: {
               750: '#2d3748'
             }
@@ -26,11 +40,15 @@
     /* Force dark mode and override Safari extensions */
     :root {
       color-scheme: dark;
+      --ios-spring: cubic-bezier(0.36, 0.66, 0.04, 1);
     }
     html, body {
-      background-color: #111827 !important;
+      background-color: #000000 !important;
       color: #ffffff !important;
-      font-family: 'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+      font-size: 17px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     /* Prevent dark mode extensions from inverting colors */
     * {
@@ -38,7 +56,74 @@
     }
     /* Prevent mobile keyboard zoom */
     input, select, textarea {
-      font-size: 16px !important;
+      font-size: 17px !important;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+    }
+    /* iOS safe areas */
+    .safe-area-pad {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-area-top {
+      padding-top: env(safe-area-inset-top);
+    }
+    /* Tabular numbers for data displays */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+    }
+    /* iOS button tap animation */
+    .ios-btn {
+      transition: transform 0.1s ease, opacity 0.1s ease;
+    }
+    .ios-btn:active {
+      transform: scale(0.96);
+      opacity: 0.7;
+    }
+    /* iOS card style */
+    .ios-card {
+      background-color: #1C1C1E;
+      border-radius: 16px;
+      border: none;
+      box-shadow: none;
+    }
+    /* iOS frosted glass */
+    .ios-glass {
+      background: rgba(28, 28, 30, 0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    /* iOS progress bar */
+    .ios-progress {
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    /* iOS separator */
+    .ios-separator {
+      border-bottom: 1px solid rgba(60, 60, 67, 0.36);
+    }
+    /* Screen transitions */
+    .ios-transition {
+      transition: all 0.3s ease-in-out;
+    }
+    /* Spring animation for completions */
+    @keyframes ios-checkmark {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .ios-check-anim {
+      animation: ios-checkmark 0.3s var(--ios-spring) forwards;
+    }
+    /* Smooth height expansion */
+    .ios-expand {
+      transition: max-height 0.3s var(--ios-spring), opacity 0.3s ease;
+      overflow: hidden;
     }
   </style>
 </head>
@@ -658,23 +743,23 @@
         const allCompleted = currentExerciseIndex === -1;
 
         return (
-          <div className="min-h-screen bg-gray-900 pb-32" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 sticky top-0 z-10 shadow-lg">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xl font-bold">{activeWorkout.name}</h2>
-                <span className="text-sm opacity-90">
+          <div className="min-h-screen pb-32 safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass text-white sticky top-0 z-10 safe-area-top" style={{ padding: '12px 16px' }}>
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="text-lg font-semibold" style={{ letterSpacing: '-0.3px' }}>{activeWorkout.name}</h2>
+                <span className="text-sm tabular-nums" style={{ color: '#8E8E93' }}>
                   {Math.floor((new Date() - activeWorkout.startTime) / 60000)} min
                 </span>
               </div>
 
               {restTimer !== null && (
-                <div className="mb-2">
-                  <div className="flex justify-between items-center mb-1">
+                <div className="mb-3" style={{ backgroundColor: '#2C2C2E', borderRadius: '12px', padding: '12px' }}>
+                  <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold">
-                      {restType === 'exercise' ? '🌟 Transition Break' : '⏱️ Rest Period'}
+                      {restType === 'exercise' ? 'Transition break' : 'Rest period'}
                     </span>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold">
+                      <span className="text-xl font-bold tabular-nums" style={{ color: '#0A84FF' }}>
                         {Math.floor(restTimeLeft / 60)}:{(restTimeLeft % 60).toString().padStart(2, '0')}
                       </span>
                       <button
@@ -683,22 +768,26 @@
                           setRestTimer(restTimer + 30);
                           setRestTimeLeft(newTime);
                         }}
-                        className="px-2 py-1 bg-green-600 bg-opacity-80 rounded text-xs hover:bg-opacity-100"
+                        className="ios-btn"
+                        style={{ padding: '6px 10px', backgroundColor: '#30D158', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}
                       >
                         +30s
                       </button>
                       <button
                         onClick={cancelRestTimer}
-                        className="px-3 py-1 bg-white bg-opacity-20 rounded text-xs hover:bg-opacity-30"
+                        className="ios-btn"
+                        style={{ padding: '6px 12px', backgroundColor: '#2C2C2E', border: '1px solid rgba(60,60,67,0.36)', borderRadius: '8px', fontSize: '13px', fontWeight: 600, color: '#8E8E93' }}
                       >
                         Skip
                       </button>
                     </div>
                   </div>
-                  <div className="w-full bg-blue-800 rounded-full h-2">
+                  <div className="ios-progress" style={{ backgroundColor: '#48484A' }}>
                     <div
-                      className="bg-yellow-400 h-2 rounded-full transition-all"
                       style={{
+                        backgroundColor: '#0A84FF',
+                        height: '4px',
+                        borderRadius: '2px',
                         width: `${100 - (restTimeLeft / restTimer * 100)}%`,
                         transition: 'width 1s linear'
                       }}
@@ -707,78 +796,89 @@
                 </div>
               )}
 
-              <div className="mb-2">
-                <div className="text-center text-xs text-gray-200 mb-1 opacity-90">
-                  Manual Rest Timers
+              <div className="mb-3">
+                <div className="text-center text-xs mb-2" style={{ color: '#8E8E93' }}>
+                  Manual rest timers
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => startRestTimer(60, 'set')}
-                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-50 text-white rounded-lg font-semibold text-xs hover:bg-opacity-70"
+                    className="ios-btn flex-1 text-white font-semibold text-sm"
+                    style={{ padding: '8px', backgroundColor: '#2C2C2E', borderRadius: '10px' }}
                   >
                     60s
                   </button>
                   <button
                     onClick={() => startRestTimer(90, 'set')}
-                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-70 text-white rounded-lg font-semibold text-xs hover:bg-opacity-90 border border-yellow-400"
+                    className="ios-btn flex-1 text-white font-semibold text-sm"
+                    style={{ padding: '8px', backgroundColor: '#0A84FF', borderRadius: '10px' }}
                   >
-                    90s ⭐
+                    90s
                   </button>
                   <button
                     onClick={() => startRestTimer(120, 'set')}
-                    className="flex-1 px-3 py-1.5 bg-blue-800 bg-opacity-50 text-white rounded-lg font-semibold text-xs hover:bg-opacity-70"
+                    className="ios-btn flex-1 text-white font-semibold text-sm"
+                    style={{ padding: '8px', backgroundColor: '#2C2C2E', borderRadius: '10px' }}
                   >
                     2m
                   </button>
                 </div>
               </div>
 
-              <div className="w-full bg-blue-800 rounded-full h-2 mb-2">
+              <div className="ios-progress mb-3" style={{ backgroundColor: '#48484A' }}>
                 <div
-                  className="bg-green-400 h-2 rounded-full transition-all"
-                  style={{ width: `${(activeWorkout.exercises.filter(e => e.completed).length / activeWorkout.exercises.length) * 100}%` }}
+                  style={{
+                    backgroundColor: '#30D158',
+                    height: '4px',
+                    borderRadius: '2px',
+                    width: `${(activeWorkout.exercises.filter(e => e.completed).length / activeWorkout.exercises.length) * 100}%`,
+                    transition: 'width 0.3s var(--ios-spring)'
+                  }}
                 />
               </div>
 
-              <div className="bg-blue-800 bg-opacity-50 rounded-lg p-3 text-xs">
-                <p className="font-semibold mb-1">📋 Workout Flow:</p>
-                <p className="opacity-90">Complete ALL sets of one exercise before moving to the next. Rest 60-90s between sets. Take a 2-3 min break between exercises.</p>
+              <div style={{ backgroundColor: '#2C2C2E', borderRadius: '10px', padding: '10px 12px' }}>
+                <p className="text-xs" style={{ color: '#8E8E93' }}>Complete all sets of one exercise before moving to the next. Rest 60-90s between sets, 2-3 min between exercises.</p>
               </div>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {!warmupComplete && (
-                <div className="bg-orange-900 bg-opacity-30 border-2 border-orange-500 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
+                <div className="ios-card" style={{ padding: '16px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#FF9F0A' }} />
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-lg text-orange-300">🔥 Warm-up (6-8 min)</h3>
+                      <h3 className="font-semibold" style={{ fontSize: '17px', color: '#FF9F0A' }}>Warm-up (6-8 min)</h3>
                       <button
                         onClick={() => setWarmupExpanded(!warmupExpanded)}
-                        className="text-orange-300"
+                        className="ios-btn"
+                        style={{ color: '#FF9F0A' }}
                       >
                         {warmupExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                       </button>
                     </div>
                     <button
                       onClick={() => setWarmupComplete(true)}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-lg font-semibold text-sm hover:bg-orange-700"
+                      className="ios-btn"
+                      style={{ padding: '8px 16px', backgroundColor: '#FF9F0A', borderRadius: '12px', fontWeight: 600, fontSize: '15px', color: '#000' }}
                     >
                       Complete
                     </button>
                   </div>
 
                   {warmupExpanded && (
-                    <div className="space-y-2 text-sm text-gray-200">
-                      <p>• 1 min brisk march or jumping jacks</p>
-                      <p className="font-semibold">2 rounds of:</p>
-                      <p className="ml-4">• 8 hip hinges</p>
-                      <p className="ml-4">• 8 squat-to-stand</p>
-                      <p className="ml-4">• 10 scapular push-ups (small range)</p>
-                      <p className="ml-4">• 20-30s plank</p>
+                    <div className="space-y-2 text-sm" style={{ color: '#8E8E93' }}>
+                      <p>1 min brisk march or jumping jacks</p>
+                      <p className="font-semibold" style={{ color: '#fff' }}>2 rounds of:</p>
+                      <p className="ml-4">8 hip hinges</p>
+                      <p className="ml-4">8 squat-to-stand</p>
+                      <p className="ml-4">10 scapular push-ups (small range)</p>
+                      <p className="ml-4">20-30s plank</p>
                       <div className="flex gap-2 mt-3">
                         <button
                           onClick={() => startRestTimer(480, 'set')}
-                          className="flex-1 px-3 py-2 bg-orange-700 text-white rounded-lg font-semibold text-xs hover:bg-orange-800"
+                          className="ios-btn flex-1 text-white font-semibold text-sm"
+                          style={{ padding: '10px', backgroundColor: '#FF9F0A', borderRadius: '12px', color: '#000' }}
                         >
                           Start 8 min timer
                         </button>
@@ -797,25 +897,39 @@
                   <div
                     key={exIdx}
                     id={`exercise-${exIdx}`}
-                    className={`bg-gray-800 rounded-lg shadow-lg p-4 border-2 transition-all ${
-                      isCurrentExercise ? 'border-blue-500' : isPastExercise ? 'border-green-600' : 'border-gray-700 opacity-60'
-                    }`}
+                    className="ios-card ios-transition"
+                    style={{
+                      padding: '16px',
+                      position: 'relative',
+                      opacity: isFutureExercise ? 0.5 : 1,
+                    }}
                   >
+                    {/* Status dot */}
+                    <div style={{
+                      position: 'absolute', top: '12px', right: '12px',
+                      width: '8px', height: '8px', borderRadius: '4px',
+                      backgroundColor: isPastExercise ? '#30D158' : isCurrentExercise ? '#0A84FF' : '#48484A'
+                    }} />
+
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-gray-500 mr-1">#{exIdx + 1}</span>
+                          <span className="text-sm font-semibold tabular-nums" style={{ color: '#48484A' }}>#{exIdx + 1}</span>
                           <button
                             onClick={() => toggleExerciseComplete(exIdx)}
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 ios-btn"
                           >
                             {exercise.completed ? (
-                              <CheckSquare className="w-6 h-6 text-green-500" />
+                              <CheckSquare className="w-6 h-6 ios-check-anim" style={{ color: '#30D158' }} />
                             ) : (
-                              <Square className="w-6 h-6 text-gray-600" />
+                              <Square className="w-6 h-6" style={{ color: '#48484A' }} />
                             )}
                           </button>
-                          <h3 className={`font-semibold text-lg text-white ${exercise.completed ? 'line-through text-gray-500' : ''}`}>
+                          <h3 className="font-semibold" style={{
+                            fontSize: '17px',
+                            color: exercise.completed ? '#48484A' : '#fff',
+                            textDecoration: exercise.completed ? 'line-through' : 'none'
+                          }}>
                             {exercise.name}
                           </h3>
                           {exercise.videoUrl && (
@@ -823,8 +937,9 @@
                               href={exercise.videoUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="ml-2 text-blue-400 hover:text-blue-300"
+                              className="ios-btn ml-1"
                               title="Watch form video"
+                              style={{ color: '#0A84FF' }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 window.open(exercise.videoUrl, '_blank', 'noopener,noreferrer');
@@ -835,28 +950,29 @@
                           )}
                         </div>
                         {isCurrentExercise && (
-                          <div className="mt-1 text-xs font-semibold text-blue-400">
-                            ← CURRENT EXERCISE
+                          <div className="mt-1 text-xs font-semibold" style={{ color: '#0A84FF' }}>
+                            Current exercise
                           </div>
                         )}
-                        <p className="text-sm text-gray-400">
-                          Target: {exercise.sets} × {exercise.reps}
+                        <p className="text-sm tabular-nums" style={{ color: '#8E8E93', marginTop: '2px' }}>
+                          Target: {exercise.sets} x {exercise.reps}
                         </p>
                         {exercise.notes && (
-                          <p className="text-xs text-blue-400 mt-1">{exercise.notes}</p>
+                          <p className="text-xs mt-1" style={{ color: '#0A84FF' }}>{exercise.notes}</p>
                         )}
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {exercise.actualSets.map((set, setIdx) => (
                         <div key={setIdx} className="flex gap-2 items-center">
-                          <span className="text-sm font-medium text-gray-400 w-10 flex-shrink-0">Set {setIdx + 1}</span>
+                          <span className="text-sm font-medium tabular-nums w-10 flex-shrink-0" style={{ color: '#8E8E93' }}>Set {setIdx + 1}</span>
                           {exercise.isTimeBased ? (
                             <select
                               value={set.reps}
                               onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
-                              className="w-24 flex-shrink-0 px-2 py-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-lg font-semibold text-white"
+                              className="w-24 flex-shrink-0 text-center text-lg font-semibold text-white tabular-nums"
+                              style={{ backgroundColor: '#2C2C2E', border: 'none', borderRadius: '10px', padding: '11px 16px' }}
                               disabled={isFutureExercise}
                             >
                               <option value="">-</option>
@@ -873,7 +989,8 @@
                             <select
                               value={set.reps}
                               onChange={(e) => updateSet(exIdx, setIdx, 'reps', e.target.value)}
-                              className="w-20 flex-shrink-0 px-2 py-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-lg font-semibold text-white"
+                              className="w-20 flex-shrink-0 text-center text-lg font-semibold text-white tabular-nums"
+                              style={{ backgroundColor: '#2C2C2E', border: 'none', borderRadius: '10px', padding: '11px 16px' }}
                               disabled={isFutureExercise}
                             >
                               <option value="">-</option>
@@ -887,7 +1004,8 @@
                             placeholder="notes"
                             value={set.notes}
                             onChange={(e) => updateSet(exIdx, setIdx, 'notes', e.target.value)}
-                            className="flex-1 min-w-0 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white placeholder-gray-500"
+                            className="flex-1 min-w-0 text-sm text-white"
+                            style={{ backgroundColor: '#2C2C2E', border: 'none', borderRadius: '10px', padding: '11px 16px' }}
                             disabled={isFutureExercise}
                           />
                         </div>
@@ -895,9 +1013,9 @@
                     </div>
 
                     {exercise.completed && exIdx < activeWorkout.exercises.length - 1 && (
-                      <div className="mt-4 bg-gray-900 rounded-lg p-3 border border-gray-700">
-                        <p className="text-xs text-gray-400 text-center">
-                          💡 Transition timer auto-started (2 min). Use +30s button in header if you need more time.
+                      <div className="mt-3" style={{ backgroundColor: '#000', borderRadius: '10px', padding: '10px 12px' }}>
+                        <p className="text-xs text-center" style={{ color: '#8E8E93' }}>
+                          Transition timer started (2 min). Use +30s if needed.
                         </p>
                       </div>
                     )}
@@ -906,15 +1024,16 @@
               })}
             </div>
 
-            <div className="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700 p-4">
-              <div className="flex gap-2">
+            <div className="fixed bottom-0 left-0 right-0 ios-glass safe-area-bottom" style={{ padding: '12px 16px', borderTop: '1px solid rgba(60,60,67,0.36)' }}>
+              <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setActiveWorkout(null);
                     setCurrentView('home');
                     cancelRestTimer();
                   }}
-                  className="flex-1 px-6 py-3 border border-gray-600 text-gray-300 rounded-lg font-semibold hover:bg-gray-700"
+                  className="ios-btn flex-1 font-semibold"
+                  style={{ padding: '14px', backgroundColor: '#2C2C2E', borderRadius: '12px', color: '#8E8E93', minHeight: '44px' }}
                 >
                   Cancel
                 </button>
@@ -923,9 +1042,10 @@
                     finishWorkout();
                     cancelRestTimer();
                   }}
-                  className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700"
+                  className="ios-btn flex-1 font-semibold"
+                  style={{ padding: '14px', backgroundColor: '#30D158', borderRadius: '12px', color: '#fff', minHeight: '44px' }}
                 >
-                  Finish Workout
+                  Finish workout
                 </button>
               </div>
             </div>
@@ -937,31 +1057,38 @@
         const sortedEntries = [...weightEntries].sort((a, b) => new Date(a.date) - new Date(b.date));
 
         return (
-          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
-              <h2 className="text-xl font-bold">Weight Progress</h2>
+          <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass safe-area-top" style={{ padding: '12px 16px' }}>
+              <button onClick={() => setCurrentView('home')} className="ios-btn mb-2 text-sm font-semibold" style={{ color: '#0A84FF' }}>
+                <span style={{ marginRight: '4px' }}>&lsaquo;</span> Back
+              </button>
+              <h2 style={{ fontSize: '34px', fontWeight: 700, letterSpacing: '0.4px' }}>Weight</h2>
             </div>
 
-            <div className="p-4">
+            <div style={{ padding: '16px' }}>
               {weightEntries.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">No weight entries yet. Log your first weigh-in!</p>
+                <div className="text-center" style={{ padding: '60px 0' }}>
+                  <TrendingUp className="mx-auto mb-3" style={{ width: '60px', height: '60px', color: '#48484A' }} />
+                  <p style={{ fontSize: '17px', color: '#8E8E93' }}>No weight entries yet</p>
+                  <p className="text-sm mt-1" style={{ color: '#48484A' }}>Log your first weigh-in to get started</p>
+                </div>
               ) : (
                 <>
-                  <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
-                    <div className="flex justify-between text-xs text-gray-400 mb-2">
-                      <span>Start: {startWeight} lb</span>
-                      <span>Goal: {goalWeight} lb</span>
+                  <div className="ios-card" style={{ padding: '16px', marginBottom: '12px' }}>
+                    <div className="flex justify-between text-xs mb-2" style={{ color: '#8E8E93' }}>
+                      <span className="tabular-nums">Start: {startWeight} lb</span>
+                      <span className="tabular-nums">Goal: {goalWeight} lb</span>
                     </div>
-                    <div className="relative h-48 bg-gray-700 rounded">
+                    <div className="relative h-48" style={{ backgroundColor: '#2C2C2E', borderRadius: '10px' }}>
                       {sortedEntries.map((entry, idx) => {
                         const percentage = ((entry.weight - goalWeight) / (startWeight - goalWeight)) * 100;
                         const leftPosition = (idx / (sortedEntries.length - 1 || 1)) * 100;
                         return (
                           <div
                             key={idx}
-                            className="absolute w-2 bg-green-400 rounded-full"
+                            className="absolute w-2 rounded-full"
                             style={{
+                              backgroundColor: '#30D158',
                               bottom: `${100 - Math.min(Math.max(percentage, 0), 100)}%`,
                               left: `${leftPosition}%`,
                               height: '8px',
@@ -990,7 +1117,7 @@
                               y1={`${100 - Math.min(Math.max(prevPercentage, 0), 100)}%`}
                               x2={`${leftPosition}%`}
                               y2={`${100 - Math.min(Math.max(percentage, 0), 100)}%`}
-                              stroke="#4ade80"
+                              stroke="#30D158"
                               strokeWidth="2"
                             />
                           </svg>
@@ -999,26 +1126,32 @@
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Weight History</h3>
-                    {weightEntries.map((entry, idx) => {
-                      const prevWeight = idx < weightEntries.length - 1 ? weightEntries[idx + 1].weight : startWeight;
-                      const change = entry.weight - prevWeight;
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2" style={{ color: '#8E8E93', padding: '0 4px' }}>History</h3>
+                    <div className="ios-card" style={{ overflow: 'hidden' }}>
+                      {weightEntries.map((entry, idx) => {
+                        const prevWeight = idx < weightEntries.length - 1 ? weightEntries[idx + 1].weight : startWeight;
+                        const change = entry.weight - prevWeight;
 
-                      return (
-                        <div key={idx} className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex justify-between items-center">
-                          <div>
-                            <p className="text-white font-semibold">{entry.weight} lb</p>
-                            <p className="text-xs text-gray-400">{new Date(entry.date).toLocaleDateString()}</p>
-                          </div>
-                          {change !== 0 && (
-                            <div className={`text-sm font-semibold ${change < 0 ? 'text-green-400' : 'text-red-400'}`}>
-                              {change > 0 ? '+' : ''}{change.toFixed(1)} lb
+                        return (
+                          <div key={idx} className="flex justify-between items-center" style={{
+                            padding: '12px 16px',
+                            borderBottom: idx < weightEntries.length - 1 ? '1px solid rgba(60,60,67,0.36)' : 'none',
+                            minHeight: '44px'
+                          }}>
+                            <div>
+                              <p className="text-white font-semibold tabular-nums">{entry.weight} lb</p>
+                              <p className="text-xs" style={{ color: '#8E8E93' }}>{new Date(entry.date).toLocaleDateString()}</p>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                            {change !== 0 && (
+                              <div className="text-sm font-semibold tabular-nums" style={{ color: change < 0 ? '#30D158' : '#FF453A' }}>
+                                {change > 0 ? '+' : ''}{change.toFixed(1)} lb
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
               )}
@@ -1032,29 +1165,34 @@
         const maxSteps = Math.max(stepsGoal, ...sortedEntries.map(e => e.steps));
 
         return (
-          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
-              <h2 className="text-xl font-bold">Steps Progress</h2>
+          <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass safe-area-top" style={{ padding: '12px 16px' }}>
+              <button onClick={() => setCurrentView('home')} className="ios-btn mb-2 text-sm font-semibold" style={{ color: '#0A84FF' }}>
+                <span style={{ marginRight: '4px' }}>&lsaquo;</span> Back
+              </button>
+              <h2 style={{ fontSize: '34px', fontWeight: 700, letterSpacing: '0.4px' }}>Steps</h2>
             </div>
 
-            <div className="p-4">
+            <div style={{ padding: '16px' }}>
               {stepsEntries.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">No steps entries yet. Log your first one!</p>
+                <div className="text-center" style={{ padding: '60px 0' }}>
+                  <Footprints className="mx-auto mb-3" style={{ width: '60px', height: '60px', color: '#48484A' }} />
+                  <p style={{ fontSize: '17px', color: '#8E8E93' }}>No steps entries yet</p>
+                  <p className="text-sm mt-1" style={{ color: '#48484A' }}>Log your first entry to get started</p>
+                </div>
               ) : (
                 <>
-                  <div className="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
-                    <div className="flex justify-between text-xs text-gray-400 mb-2">
-                      <span>0 steps</span>
-                      <span>Goal: {stepsGoal.toLocaleString()} steps</span>
+                  <div className="ios-card" style={{ padding: '16px', marginBottom: '12px' }}>
+                    <div className="flex justify-between text-xs mb-2" style={{ color: '#8E8E93' }}>
+                      <span className="tabular-nums">0 steps</span>
+                      <span className="tabular-nums">Goal: {stepsGoal.toLocaleString()}</span>
                     </div>
-                    <div className="relative h-48 bg-gray-700 rounded">
-                      {/* Goal line */}
+                    <div className="relative h-48" style={{ backgroundColor: '#2C2C2E', borderRadius: '10px' }}>
                       <div
-                        className="absolute w-full border-t-2 border-dashed border-green-500 opacity-50"
-                        style={{ bottom: `${(stepsGoal / maxSteps) * 100}%` }}
+                        className="absolute w-full"
+                        style={{ bottom: `${(stepsGoal / maxSteps) * 100}%`, borderTop: '2px dashed rgba(48,209,88,0.4)' }}
                       >
-                        <span className="absolute right-0 -top-4 text-xs text-green-400">8k goal</span>
+                        <span className="absolute right-1 text-xs" style={{ top: '-16px', color: '#30D158' }}>8k goal</span>
                       </div>
                       {sortedEntries.map((entry, idx) => {
                         const percentage = (entry.steps / maxSteps) * 100;
@@ -1063,8 +1201,9 @@
                         return (
                           <div
                             key={idx}
-                            className={`absolute w-2 rounded-full ${meetsGoal ? 'bg-green-400' : 'bg-orange-400'}`}
+                            className="absolute w-2 rounded-full"
                             style={{
+                              backgroundColor: meetsGoal ? '#30D158' : '#FF9F0A',
                               bottom: `${Math.min(percentage, 100)}%`,
                               left: `${leftPosition}%`,
                               height: '8px',
@@ -1093,39 +1232,45 @@
                               y1={`${100 - Math.min(prevPercentage, 100)}%`}
                               x2={`${leftPosition}%`}
                               y2={`${100 - Math.min(percentage, 100)}%`}
-                              stroke="#fb923c"
+                              stroke="#FF9F0A"
                               strokeWidth="2"
                             />
                           </svg>
                         );
                       })}
                     </div>
-                    <div className="mt-2 text-center">
-                      <span className="text-sm text-gray-400">Weekly Average: </span>
-                      <span className={`text-lg font-bold ${weeklyStepsAverage >= stepsGoal ? 'text-green-400' : 'text-orange-400'}`}>
+                    <div className="mt-3 text-center">
+                      <span className="text-sm" style={{ color: '#8E8E93' }}>Weekly average: </span>
+                      <span className="text-lg font-bold tabular-nums" style={{ color: weeklyStepsAverage >= stepsGoal ? '#30D158' : '#FF9F0A' }}>
                         {weeklyStepsAverage.toLocaleString()} steps
                       </span>
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-gray-300 mb-2">Steps History</h3>
-                    {stepsEntries.map((entry, idx) => {
-                      const meetsGoal = entry.steps >= stepsGoal;
-                      return (
-                        <div key={idx} className="bg-gray-800 rounded-lg p-3 border border-gray-700 flex justify-between items-center">
-                          <div>
-                            <p className={`font-semibold ${meetsGoal ? 'text-green-400' : 'text-white'}`}>
-                              {entry.steps.toLocaleString()} steps
-                            </p>
-                            <p className="text-xs text-gray-400">{new Date(entry.date).toLocaleDateString()}</p>
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2" style={{ color: '#8E8E93', padding: '0 4px' }}>History</h3>
+                    <div className="ios-card" style={{ overflow: 'hidden' }}>
+                      {stepsEntries.map((entry, idx) => {
+                        const meetsGoal = entry.steps >= stepsGoal;
+                        return (
+                          <div key={idx} className="flex justify-between items-center" style={{
+                            padding: '12px 16px',
+                            borderBottom: idx < stepsEntries.length - 1 ? '1px solid rgba(60,60,67,0.36)' : 'none',
+                            minHeight: '44px'
+                          }}>
+                            <div>
+                              <p className="font-semibold tabular-nums" style={{ color: meetsGoal ? '#30D158' : '#fff' }}>
+                                {entry.steps.toLocaleString()} steps
+                              </p>
+                              <p className="text-xs" style={{ color: '#8E8E93' }}>{new Date(entry.date).toLocaleDateString()}</p>
+                            </div>
+                            {meetsGoal && (
+                              <Check className="w-5 h-5" style={{ color: '#30D158' }} />
+                            )}
                           </div>
-                          {meetsGoal && (
-                            <span className="text-green-400 text-sm">✓ Goal met</span>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </>
               )}
@@ -1136,21 +1281,33 @@
 
       if (currentView === 'notes') {
         return (
-          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
-              <h2 className="text-xl font-bold">Notes & Resources</h2>
+          <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass safe-area-top" style={{ padding: '12px 16px' }}>
+              <button onClick={() => setCurrentView('home')} className="ios-btn mb-2 text-sm font-semibold" style={{ color: '#0A84FF' }}>
+                <span style={{ marginRight: '4px' }}>&lsaquo;</span> Back
+              </button>
+              <h2 style={{ fontSize: '34px', fontWeight: 700, letterSpacing: '0.4px' }}>Notes</h2>
             </div>
 
-            <div className="p-4">
+            <div style={{ padding: '16px' }}>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add workout links, nutrition info, progress notes, or any other information here..."
-                className="w-full h-96 bg-gray-800 text-white border border-gray-700 rounded-lg p-4 text-sm"
-                style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
+                placeholder="Add workout links, nutrition info, progress notes..."
+                className="w-full text-white text-sm"
+                style={{
+                  height: '384px',
+                  backgroundColor: '#1C1C1E',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  resize: 'none',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px #0A84FF'}
+                onBlur={(e) => e.target.style.boxShadow = 'none'}
               />
-              <p className="text-xs text-gray-500 mt-2">Your notes are automatically saved</p>
+              <p className="text-xs mt-2" style={{ color: '#48484A' }}>Auto-saved</p>
             </div>
           </div>
         );
@@ -1158,52 +1315,64 @@
 
       if (currentView === 'history') {
         return (
-          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-              <button onClick={() => setCurrentView('home')} className="mb-2 text-sm opacity-90">← Back</button>
-              <h2 className="text-xl font-bold">Workout History</h2>
+          <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass safe-area-top" style={{ padding: '12px 16px' }}>
+              <button onClick={() => setCurrentView('home')} className="ios-btn mb-2 text-sm font-semibold" style={{ color: '#0A84FF' }}>
+                <span style={{ marginRight: '4px' }}>&lsaquo;</span> Back
+              </button>
+              <h2 style={{ fontSize: '34px', fontWeight: 700, letterSpacing: '0.4px' }}>History</h2>
             </div>
 
-            <div className="p-4 space-y-3">
+            <div style={{ padding: '16px' }}>
               {workouts.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">No workouts yet. Start your first one!</p>
+                <div className="text-center" style={{ padding: '60px 0' }}>
+                  <Dumbbell className="mx-auto mb-3" style={{ width: '60px', height: '60px', color: '#48484A' }} />
+                  <p style={{ fontSize: '17px', color: '#8E8E93' }}>No workouts yet</p>
+                  <p className="text-sm mt-1" style={{ color: '#48484A' }}>Complete your first workout to see it here</p>
+                </div>
               ) : (
-                workouts.map((workout, idx) => (
-                  <div
-                    key={idx}
-                    className="w-full bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700 text-left hover:border-blue-500 transition relative"
-                  >
-                    <button
-                      onClick={() => setCurrentView(`workout-detail-${idx}`)}
-                      className="w-full text-left"
+                <div className="ios-card" style={{ overflow: 'hidden' }}>
+                  {workouts.map((workout, idx) => (
+                    <div
+                      key={idx}
+                      className="relative"
+                      style={{
+                        borderBottom: idx < workouts.length - 1 ? '1px solid rgba(60,60,67,0.36)' : 'none',
+                      }}
                     >
-                      <div className="flex justify-between items-start mb-2 pr-8">
-                        <h3 className="font-semibold text-white">{workout.name}</h3>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-400">
-                            {new Date(workout.date).toLocaleDateString()}
+                      <button
+                        onClick={() => setCurrentView(`workout-detail-${idx}`)}
+                        className="w-full text-left ios-btn"
+                        style={{ padding: '12px 16px', paddingRight: '48px', minHeight: '44px' }}
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>{workout.name}</h3>
+                          <div className="text-right">
+                            <p className="text-sm" style={{ color: '#8E8E93' }}>
+                              {new Date(workout.date).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <p className="text-sm tabular-nums" style={{ color: '#8E8E93' }}>
+                            {Math.floor((new Date(workout.endTime) - new Date(workout.startTime)) / 60000)} min
                           </p>
-                          <p className="text-xs text-gray-500">
-                            {new Date(workout.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <p className="text-xs tabular-nums" style={{ color: '#48484A' }}>
+                            {workout.exercises.filter(e => e.completed).length}/{workout.exercises.length} exercises
                           </p>
                         </div>
-                      </div>
-                      <p className="text-sm text-gray-300">
-                        Duration: {Math.floor((new Date(workout.endTime) - new Date(workout.startTime)) / 60000)} min
-                      </p>
-                      <div className="mt-2 text-xs text-gray-500">
-                        {workout.exercises.filter(e => e.completed).length} / {workout.exercises.length} exercises completed
-                      </div>
-                    </button>
-                    <button
-                      onClick={(e) => deleteWorkout(idx, e)}
-                      className="absolute top-4 right-4 p-2 text-gray-500 hover:text-red-400 hover:bg-gray-700 rounded-lg transition"
-                      title="Delete workout"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                ))
+                      </button>
+                      <button
+                        onClick={(e) => deleteWorkout(idx, e)}
+                        className="absolute top-3 right-3 ios-btn"
+                        style={{ padding: '8px', color: '#FF453A', borderRadius: '8px' }}
+                        title="Delete workout"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           </div>
@@ -1215,41 +1384,48 @@
         const workout = workouts[workoutIndex];
 
         return (
-          <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-              <button onClick={() => setCurrentView('history')} className="mb-2 text-sm opacity-90">← Back to History</button>
-              <h2 className="text-xl font-bold">{workout.name}</h2>
-              <div className="flex gap-4 text-sm mt-2 opacity-90">
+          <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+            <div className="ios-glass safe-area-top" style={{ padding: '12px 16px' }}>
+              <button onClick={() => setCurrentView('history')} className="ios-btn mb-2 text-sm font-semibold" style={{ color: '#0A84FF' }}>
+                <span style={{ marginRight: '4px' }}>&lsaquo;</span> Back
+              </button>
+              <h2 className="font-bold" style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.3px' }}>{workout.name}</h2>
+              <div className="flex gap-4 text-sm mt-1 tabular-nums" style={{ color: '#8E8E93' }}>
                 <span>{new Date(workout.date).toLocaleDateString()}</span>
                 <span>{new Date(workout.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 <span>{Math.floor((new Date(workout.endTime) - new Date(workout.startTime)) / 60000)} min</span>
               </div>
             </div>
 
-            <div className="p-4 space-y-4">
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {workout.exercises.map((exercise, exIdx) => (
                 <div
                   key={exIdx}
-                  className={`bg-gray-800 rounded-lg shadow-lg p-4 border ${
-                    exercise.completed ? 'border-green-600' : 'border-gray-700'
-                  }`}
+                  className="ios-card"
+                  style={{ padding: '16px', position: 'relative' }}
                 >
+                  <div style={{
+                    position: 'absolute', top: '12px', right: '12px',
+                    width: '8px', height: '8px', borderRadius: '4px',
+                    backgroundColor: exercise.completed ? '#30D158' : '#48484A'
+                  }} />
+
                   <div className="flex items-center gap-2 mb-3">
                     {exercise.completed ? (
-                      <CheckSquare className="w-5 h-5 text-green-500" />
+                      <CheckSquare className="w-5 h-5" style={{ color: '#30D158' }} />
                     ) : (
-                      <Square className="w-5 h-5 text-gray-600" />
+                      <Square className="w-5 h-5" style={{ color: '#48484A' }} />
                     )}
-                    <h3 className="font-semibold text-lg text-white">
+                    <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>
                       {exercise.name}
                     </h3>
                   </div>
 
-                  <p className="text-sm text-gray-400 mb-2">
-                    Target: {exercise.sets} × {exercise.reps}
+                  <p className="text-sm mb-2 tabular-nums" style={{ color: '#8E8E93' }}>
+                    Target: {exercise.sets} x {exercise.reps}
                   </p>
 
-                  <div className="space-y-1">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {exercise.actualSets.map((set, setIdx) => {
                       let displayValue = set.reps || '-';
                       if (exercise.isTimeBased && set.reps) {
@@ -1262,13 +1438,16 @@
                       }
 
                       return (
-                        <div key={setIdx} className="flex items-center gap-2 text-sm">
-                          <span className="text-gray-500 w-16">Set {setIdx + 1}:</span>
-                          <span className="text-white font-semibold">
+                        <div key={setIdx} className="flex items-center gap-2 text-sm" style={{
+                          padding: '6px 0',
+                          borderBottom: setIdx < exercise.actualSets.length - 1 ? '1px solid rgba(60,60,67,0.18)' : 'none'
+                        }}>
+                          <span className="w-16 tabular-nums" style={{ color: '#48484A' }}>Set {setIdx + 1}:</span>
+                          <span className="text-white font-semibold tabular-nums">
                             {displayValue} {exercise.isTimeBased ? '' : 'reps'}
                           </span>
                           {set.notes && (
-                            <span className="text-gray-400 text-xs ml-2">({set.notes})</span>
+                            <span className="text-xs ml-2" style={{ color: '#8E8E93' }}>({set.notes})</span>
                           )}
                         </div>
                       );
@@ -1285,110 +1464,113 @@
       const needsTest = needsStrengthTest();
 
       return (
-        <div className="min-h-screen bg-gray-900" style={{ fontFamily: "'Proxima Nova', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
-            <div className="space-y-2">
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Weight</span>
-                  <span>{currentWeight} → {goalWeight} lb</span>
+        <div className="min-h-screen safe-area-pad" style={{ backgroundColor: '#000' }}>
+          <div className="safe-area-top" style={{ padding: '16px 16px 12px' }}>
+            <h1 style={{ fontSize: '34px', fontWeight: 700, letterSpacing: '0.4px', marginBottom: '16px', color: '#fff' }}>Health Journey</h1>
+            <div className="ios-card" style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div>
+                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8E8E93' }}>
+                    <span>Weight</span>
+                    <span className="tabular-nums">{currentWeight} → {goalWeight} lb</span>
+                  </div>
+                  <div className="ios-progress" style={{ backgroundColor: '#48484A' }}>
+                    <div style={{ backgroundColor: '#30D158', height: '4px', borderRadius: '2px', width: `${Math.min(Math.max(progressPercentage, 0), 100)}%`, transition: 'width 0.3s var(--ios-spring)' }} />
+                  </div>
                 </div>
-                <div className="w-full bg-blue-800 rounded-full h-2">
-                  <div
-                    className="bg-green-400 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min(Math.max(progressPercentage, 0), 100)}%` }}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Strength</span>
-                  <span>Push:{latestPushUps} Squat:{latestSplitSquats} Plank:{latestPlank}s Deep:{latestDeepSquat}s</span>
+                <div>
+                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8E8E93' }}>
+                    <span>Strength</span>
+                    <span className="tabular-nums">Push:{latestPushUps} Squat:{latestSplitSquats} Plank:{latestPlank}s Deep:{latestDeepSquat}s</span>
+                  </div>
+                  <div className="ios-progress" style={{ backgroundColor: '#48484A' }}>
+                    <div style={{ backgroundColor: '#BF5AF2', height: '4px', borderRadius: '2px', width: `${Math.min(Math.max(strengthProgress, 0), 100)}%`, transition: 'width 0.3s var(--ios-spring)' }} />
+                  </div>
                 </div>
-                <div className="w-full bg-blue-800 rounded-full h-2">
-                  <div
-                    className="bg-purple-400 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min(Math.max(strengthProgress, 0), 100)}%` }}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Steps (Weekly Avg)</span>
-                  <span>{weeklyStepsAverage.toLocaleString()} / {stepsGoal.toLocaleString()}</span>
+                <div>
+                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8E8E93' }}>
+                    <span>Steps (weekly avg)</span>
+                    <span className="tabular-nums">{weeklyStepsAverage.toLocaleString()} / {stepsGoal.toLocaleString()}</span>
+                  </div>
+                  <div className="ios-progress" style={{ backgroundColor: '#48484A' }}>
+                    <div style={{ backgroundColor: '#FF9F0A', height: '4px', borderRadius: '2px', width: `${Math.min(Math.max(stepsProgress, 0), 100)}%`, transition: 'width 0.3s var(--ios-spring)' }} />
+                  </div>
                 </div>
-                <div className="w-full bg-blue-800 rounded-full h-2">
-                  <div
-                    className="bg-orange-400 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min(Math.max(stepsProgress, 0), 100)}%` }}
-                  />
-                </div>
-              </div>
 
-              <div>
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Workouts</span>
-                  <span>{completedWorkouts} / {targetWorkouts}</span>
-                </div>
-                <div className="w-full bg-blue-800 rounded-full h-2">
-                  <div
-                    className="bg-yellow-400 h-2 rounded-full transition-all"
-                    style={{ width: `${Math.min((completedWorkouts / targetWorkouts) * 100, 100)}%` }}
-                  />
+                <div>
+                  <div className="flex justify-between text-xs mb-1" style={{ color: '#8E8E93' }}>
+                    <span>Workouts</span>
+                    <span className="tabular-nums">{completedWorkouts} / {targetWorkouts}</span>
+                  </div>
+                  <div className="ios-progress" style={{ backgroundColor: '#48484A' }}>
+                    <div style={{ backgroundColor: '#FFD60A', height: '4px', borderRadius: '2px', width: `${Math.min((completedWorkouts / targetWorkouts) * 100, 100)}%`, transition: 'width 0.3s var(--ios-spring)' }} />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Supplement Tracker */}
-          <div className="px-4 pt-4">
-            <div className="bg-gray-800 rounded-lg p-3 border border-gray-700">
+          <div style={{ padding: '0 16px', marginTop: '12px' }}>
+            <div className="ios-card" style={{ padding: '12px 16px' }}>
               <div className="flex items-center gap-2 mb-2">
-                <Pill className="w-4 h-4 text-yellow-400" />
-                <span className="text-xs text-gray-400">Daily Supplements</span>
+                <Pill className="w-4 h-4" style={{ color: '#FFD60A' }} />
+                <span className="text-xs" style={{ color: '#8E8E93' }}>Daily supplements</span>
               </div>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={supplements.vitaminDAM}
-                    onChange={() => toggleSupplement('vitaminDAM')}
-                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-yellow-500 focus:ring-yellow-500"
-                  />
-                  <span className="text-sm text-white">Vitamin D AM</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={supplements.vitaminDPM}
-                    onChange={() => toggleSupplement('vitaminDPM')}
-                    className="w-5 h-5 rounded bg-gray-700 border-gray-600 text-yellow-500 focus:ring-yellow-500"
-                  />
-                  <span className="text-sm text-white">Vitamin D PM</span>
-                </label>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => toggleSupplement('vitaminDAM')}
+                  className="ios-btn flex-1 flex items-center justify-center gap-2 font-semibold text-sm"
+                  style={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    backgroundColor: supplements.vitaminDAM ? '#0A84FF' : '#2C2C2E',
+                    color: supplements.vitaminDAM ? '#fff' : '#8E8E93',
+                    minHeight: '44px'
+                  }}
+                >
+                  {supplements.vitaminDAM && <Check className="w-4 h-4" />}
+                  Vitamin D AM
+                </button>
+                <button
+                  onClick={() => toggleSupplement('vitaminDPM')}
+                  className="ios-btn flex-1 flex items-center justify-center gap-2 font-semibold text-sm"
+                  style={{
+                    padding: '10px',
+                    borderRadius: '10px',
+                    backgroundColor: supplements.vitaminDPM ? '#0A84FF' : '#2C2C2E',
+                    color: supplements.vitaminDPM ? '#fff' : '#8E8E93',
+                    minHeight: '44px'
+                  }}
+                >
+                  {supplements.vitaminDPM && <Check className="w-4 h-4" />}
+                  Vitamin D PM
+                </button>
               </div>
             </div>
           </div>
 
           {(recommendedWorkout || needsTest) && (
-            <div className="p-4 pb-2">
+            <div style={{ padding: '12px 16px 0' }}>
               {needsTest && (
-                <div className="bg-purple-900 bg-opacity-30 border border-purple-500 rounded-lg p-3 mb-2 flex items-start gap-3">
-                  <Bell className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="ios-card flex items-start gap-3" style={{ padding: '12px 16px', marginBottom: '8px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#BF5AF2' }} />
+                  <Bell className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#BF5AF2' }} />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-purple-300">Time for Monthly Strength Test!</p>
-                    <p className="text-xs text-gray-300 mt-1">Test your maxes to track progress</p>
+                    <p className="text-sm font-semibold" style={{ color: '#BF5AF2' }}>Monthly strength test</p>
+                    <p className="text-xs mt-1" style={{ color: '#8E8E93' }}>Test your maxes to track progress</p>
                   </div>
                 </div>
               )}
               {recommendedWorkout && !needsTest && (
-                <div className="bg-blue-900 bg-opacity-30 border border-blue-500 rounded-lg p-3 flex items-start gap-3">
-                  <Bell className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="ios-card flex items-start gap-3" style={{ padding: '12px 16px', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#0A84FF' }} />
+                  <Bell className="w-5 h-5 flex-shrink-0 mt-0.5" style={{ color: '#0A84FF' }} />
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-blue-300">Recommended Today</p>
-                    <p className="text-xs text-gray-300 mt-1">
+                    <p className="text-sm font-semibold" style={{ color: '#0A84FF' }}>Recommended today</p>
+                    <p className="text-xs mt-1" style={{ color: '#8E8E93' }}>
                       {workoutTemplates[recommendedWorkout].name}
                     </p>
                   </div>
@@ -1397,206 +1579,222 @@
             </div>
           )}
 
-          <div className="p-4 grid grid-cols-3 gap-3">
-            <div className="col-span-2 bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+          <div className="grid grid-cols-3 gap-3" style={{ padding: '12px 16px' }}>
+            <div className="col-span-2 ios-card" style={{ padding: '16px' }}>
               <div className="flex items-center gap-2 mb-2">
-                <Target className="w-4 h-4 text-blue-400" />
-                <span className="text-xs text-gray-400">Current Weight</span>
+                <Target className="w-4 h-4" style={{ color: '#0A84FF' }} />
+                <span className="text-xs" style={{ color: '#8E8E93' }}>Current weight</span>
               </div>
-              <div className="flex items-center justify-center gap-1 mb-2 flex-wrap">
+              <div className="flex items-center justify-center gap-2 mb-3 flex-wrap">
                 <button
                   onClick={() => adjustWeight(-1)}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600"
+                  className="ios-btn"
+                  style={{ padding: '8px 10px', backgroundColor: '#2C2C2E', borderRadius: '10px', minHeight: '36px' }}
                 >
-                  <span className="text-white text-sm">-1</span>
+                  <span className="text-white text-sm font-semibold tabular-nums">-1</span>
                 </button>
                 <button
                   onClick={() => adjustWeight(-0.5)}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600"
+                  className="ios-btn"
+                  style={{ padding: '8px 10px', backgroundColor: '#2C2C2E', borderRadius: '10px', minHeight: '36px' }}
                 >
-                  <span className="text-white text-xs">-.5</span>
+                  <span className="text-white text-xs font-semibold tabular-nums">-.5</span>
                 </button>
                 <input
                   type="number"
                   value={currentWeight}
                   onChange={(e) => setCurrentWeight(Number(e.target.value))}
-                  className="text-xl font-bold w-16 bg-transparent border-b border-gray-600 text-white text-center"
+                  className="text-xl font-bold w-16 text-white text-center tabular-nums"
+                  style={{ backgroundColor: 'transparent', border: 'none', borderBottom: '2px solid #48484A' }}
                 />
-                <span className="text-sm text-gray-400">lb</span>
+                <span className="text-sm" style={{ color: '#8E8E93' }}>lb</span>
                 <button
                   onClick={() => adjustWeight(0.5)}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600"
+                  className="ios-btn"
+                  style={{ padding: '8px 10px', backgroundColor: '#2C2C2E', borderRadius: '10px', minHeight: '36px' }}
                 >
-                  <span className="text-white text-xs">+.5</span>
+                  <span className="text-white text-xs font-semibold tabular-nums">+.5</span>
                 </button>
                 <button
                   onClick={() => adjustWeight(1)}
-                  className="p-1.5 bg-gray-700 rounded hover:bg-gray-600"
+                  className="ios-btn"
+                  style={{ padding: '8px 10px', backgroundColor: '#2C2C2E', borderRadius: '10px', minHeight: '36px' }}
                 >
-                  <span className="text-white text-sm">+1</span>
+                  <span className="text-white text-sm font-semibold tabular-nums">+1</span>
                 </button>
               </div>
               <div className="flex gap-2">
                 <button
                   onClick={submitWeight}
-                  className="flex-1 p-1.5 bg-green-600 rounded-lg hover:bg-green-700 flex items-center justify-center gap-1"
+                  className="ios-btn flex-1 flex items-center justify-center gap-1 font-semibold"
+                  style={{ padding: '10px', backgroundColor: '#30D158', borderRadius: '12px', minHeight: '44px' }}
                   title="Log weight"
                 >
-                  <Check className="w-3 h-3 text-white" />
-                  <span className="text-xs text-white">Log</span>
+                  <Check className="w-4 h-4 text-white" />
+                  <span className="text-sm text-white">Log</span>
                 </button>
                 <button
                   onClick={() => setCurrentView('weightChart')}
-                  className="flex-1 p-1.5 bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center justify-center gap-1"
+                  className="ios-btn flex-1 flex items-center justify-center gap-1 font-semibold"
+                  style={{ padding: '10px', backgroundColor: '#0A84FF', borderRadius: '12px', minHeight: '44px' }}
                 >
-                  <BarChart3 className="w-3 h-3 text-white" />
-                  <span className="text-xs text-white">Chart</span>
+                  <BarChart3 className="w-4 h-4 text-white" />
+                  <span className="text-sm text-white">Chart</span>
                 </button>
               </div>
             </div>
 
-            <div className="col-span-1 bg-gray-800 rounded-lg shadow-lg p-4 border border-gray-700">
+            <div className="col-span-1 ios-card" style={{ padding: '16px' }}>
               <div className="flex items-center gap-1 mb-2">
-                <Footprints className="w-4 h-4 text-orange-400" />
-                <span className="text-xs text-gray-400">Steps Today</span>
+                <Footprints className="w-4 h-4" style={{ color: '#FF9F0A' }} />
+                <span className="text-xs" style={{ color: '#8E8E93' }}>Steps</span>
               </div>
               <input
                 type="number"
                 value={currentSteps}
                 onChange={(e) => setCurrentSteps(e.target.value)}
                 placeholder="0"
-                className="w-full text-lg font-bold bg-transparent border-b border-gray-600 text-white text-center mb-2"
+                className="w-full text-lg font-bold text-white text-center tabular-nums mb-2"
+                style={{ backgroundColor: 'transparent', border: 'none', borderBottom: '2px solid #48484A' }}
               />
               <div className="flex gap-1">
                 <button
                   onClick={submitSteps}
-                  className="flex-1 p-1 bg-green-600 rounded hover:bg-green-700 flex items-center justify-center"
+                  className="ios-btn flex-1 flex items-center justify-center"
+                  style={{ padding: '8px', backgroundColor: '#30D158', borderRadius: '10px', minHeight: '36px' }}
                   title="Log steps"
                 >
-                  <Check className="w-3 h-3 text-white" />
+                  <Check className="w-4 h-4 text-white" />
                 </button>
                 <button
                   onClick={() => setCurrentView('stepsChart')}
-                  className="flex-1 p-1 bg-orange-600 rounded hover:bg-orange-700 flex items-center justify-center"
+                  className="ios-btn flex-1 flex items-center justify-center"
+                  style={{ padding: '8px', backgroundColor: '#FF9F0A', borderRadius: '10px', minHeight: '36px' }}
                 >
-                  <BarChart3 className="w-3 h-3 text-white" />
+                  <BarChart3 className="w-4 h-4 text-white" />
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="p-4 space-y-3">
-            <h2 className="font-semibold text-gray-300">Start Workout</h2>
+          <div style={{ padding: '24px 16px 12px' }}>
+            <h2 className="font-semibold" style={{ fontSize: '22px', letterSpacing: '-0.3px', color: '#fff', marginBottom: '12px' }}>Start workout</h2>
 
-            {needsTest && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {needsTest && (
+                <button
+                  onClick={() => startWorkout('Strength-Test')}
+                  className="ios-btn w-full text-left"
+                  style={{ backgroundColor: '#1C1C1E', borderRadius: '16px', padding: '16px', position: 'relative' }}
+                >
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#BF5AF2' }} />
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>Strength Test (Monthly)</h3>
+                      <p className="text-sm" style={{ color: '#BF5AF2' }}>Test your maxes</p>
+                      <p className="text-xs mt-1 tabular-nums" style={{ color: '#48484A' }}>4 exercises &middot; ~20 min</p>
+                    </div>
+                    <ChevronRight className="w-5 h-5" style={{ color: '#BF5AF2' }} />
+                  </div>
+                </button>
+              )}
+
               <button
-                onClick={() => startWorkout('Strength-Test')}
-                className="w-full bg-purple-800 rounded-lg shadow-lg p-4 text-left hover:bg-purple-750 transition border-2 border-purple-500"
+                onClick={() => startWorkout('A')}
+                className="ios-btn w-full text-left"
+                style={{ backgroundColor: '#1C1C1E', borderRadius: '16px', padding: '16px', position: 'relative' }}
               >
+                {recommendedWorkout === 'A' && (
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#0A84FF' }} />
+                )}
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="font-semibold text-lg text-white">Strength Test (Monthly)</h3>
-                    <p className="text-sm text-purple-300">Test your maxes</p>
-                    <p className="text-xs text-gray-400 mt-1">4 exercises • ~20 min</p>
+                    <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>Workout A - Strength</h3>
+                    <p className="text-sm" style={{ color: '#8E8E93' }}>Mon / Fri</p>
+                    <p className="text-xs mt-1 tabular-nums" style={{ color: '#48484A' }}>5 exercises &middot; ~45 min</p>
                   </div>
-                  <ChevronRight className="w-6 h-6 text-purple-400" />
+                  <ChevronRight className="w-5 h-5" style={{ color: recommendedWorkout === 'A' ? '#0A84FF' : '#48484A' }} />
                 </div>
               </button>
-            )}
 
-            <button
-              onClick={() => startWorkout('A')}
-              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
-                recommendedWorkout === 'A' ? 'border-blue-500 border-2' : 'border-gray-700'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-lg text-white">Workout A - Strength</h3>
-                  <p className="text-sm text-gray-400">Mon / Fri</p>
-                  <p className="text-xs text-gray-500 mt-1">5 exercises • ~45 min</p>
-                </div>
-                {recommendedWorkout === 'A' ? (
-                  <ChevronRight className="w-6 h-6 text-blue-400" />
-                ) : (
-                  <Plus className="w-6 h-6 text-blue-400" />
+              <button
+                onClick={() => startWorkout('B')}
+                className="ios-btn w-full text-left"
+                style={{ backgroundColor: '#1C1C1E', borderRadius: '16px', padding: '16px', position: 'relative' }}
+              >
+                {recommendedWorkout === 'B' && (
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#0A84FF' }} />
                 )}
-              </div>
-            </button>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>Workout B - Volume + Legs</h3>
+                    <p className="text-sm" style={{ color: '#8E8E93' }}>Wed</p>
+                    <p className="text-xs mt-1 tabular-nums" style={{ color: '#48484A' }}>4 exercises &middot; ~45 min</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5" style={{ color: recommendedWorkout === 'B' ? '#0A84FF' : '#48484A' }} />
+                </div>
+              </button>
 
-            <button
-              onClick={() => startWorkout('B')}
-              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
-                recommendedWorkout === 'B' ? 'border-blue-500 border-2' : 'border-gray-700'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-lg text-white">Workout B - Volume + Legs</h3>
-                  <p className="text-sm text-gray-400">Wed</p>
-                  <p className="text-xs text-gray-500 mt-1">4 exercises • ~45 min</p>
-                </div>
-                {recommendedWorkout === 'B' ? (
-                  <ChevronRight className="w-6 h-6 text-blue-400" />
-                ) : (
-                  <Plus className="w-6 h-6 text-blue-400" />
+              <button
+                onClick={() => startWorkout('A-Progress')}
+                className="ios-btn w-full text-left"
+                style={{ backgroundColor: '#1C1C1E', borderRadius: '16px', padding: '16px', position: 'relative' }}
+              >
+                {recommendedWorkout === 'A-Progress' && (
+                  <div style={{ position: 'absolute', top: '12px', right: '12px', width: '8px', height: '8px', borderRadius: '4px', backgroundColor: '#0A84FF' }} />
                 )}
-              </div>
-            </button>
-
-            <button
-              onClick={() => startWorkout('A-Progress')}
-              className={`w-full bg-gray-800 rounded-lg shadow-lg p-4 text-left hover:bg-gray-750 transition border ${
-                recommendedWorkout === 'A-Progress' ? 'border-blue-500 border-2' : 'border-gray-700'
-              }`}
-            >
-              <div className="flex justify-between items-center">
-                <div>
-                  <h3 className="font-semibold text-lg text-white">Workout A - Progress Day</h3>
-                  <p className="text-sm text-gray-400">Fri (alternate)</p>
-                  <p className="text-xs text-gray-500 mt-1">5 exercises • ~45 min</p>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="font-semibold text-white" style={{ fontSize: '17px' }}>Workout A - Progress Day</h3>
+                    <p className="text-sm" style={{ color: '#8E8E93' }}>Fri (alternate)</p>
+                    <p className="text-xs mt-1 tabular-nums" style={{ color: '#48484A' }}>5 exercises &middot; ~45 min</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5" style={{ color: recommendedWorkout === 'A-Progress' ? '#0A84FF' : '#48484A' }} />
                 </div>
-                {recommendedWorkout === 'A-Progress' ? (
-                  <ChevronRight className="w-6 h-6 text-blue-400" />
-                ) : (
-                  <Plus className="w-6 h-6 text-blue-400" />
-                )}
-              </div>
-            </button>
+              </button>
+            </div>
           </div>
 
-          <div className="p-4 space-y-2">
-            <button
-              onClick={() => setCurrentView('history')}
-              className="w-full bg-gray-800 rounded-lg shadow-lg p-3 flex items-center gap-3 hover:bg-gray-750 transition border border-gray-700"
-            >
-              <Calendar className="w-5 h-5 text-gray-400" />
-              <span className="font-medium text-white">View History</span>
-            </button>
+          <div style={{ padding: '12px 16px 24px' }}>
+            <div className="ios-card" style={{ overflow: 'hidden', marginBottom: '12px' }}>
+              <button
+                onClick={() => setCurrentView('history')}
+                className="ios-btn w-full flex items-center gap-3"
+                style={{ padding: '12px 16px', minHeight: '44px', borderBottom: '1px solid rgba(60,60,67,0.36)' }}
+              >
+                <Calendar className="w-5 h-5" style={{ color: '#8E8E93' }} />
+                <span className="font-semibold text-white flex-1 text-left" style={{ fontSize: '17px' }}>History</span>
+                <ChevronRight className="w-5 h-5" style={{ color: '#48484A' }} />
+              </button>
 
-            <button
-              onClick={() => setCurrentView('notes')}
-              className="w-full bg-gray-800 rounded-lg shadow-lg p-3 flex items-center gap-3 hover:bg-gray-750 transition border border-gray-700"
-            >
-              <FileText className="w-5 h-5 text-gray-400" />
-              <span className="font-medium text-white">Notes & Resources</span>
-            </button>
+              <button
+                onClick={() => setCurrentView('notes')}
+                className="ios-btn w-full flex items-center gap-3"
+                style={{ padding: '12px 16px', minHeight: '44px' }}
+              >
+                <FileText className="w-5 h-5" style={{ color: '#8E8E93' }} />
+                <span className="font-semibold text-white flex-1 text-left" style={{ fontSize: '17px' }}>Notes</span>
+                <ChevronRight className="w-5 h-5" style={{ color: '#48484A' }} />
+              </button>
+            </div>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={exportData}
-                className="bg-gray-800 rounded-lg shadow-lg p-3 flex items-center justify-center gap-2 hover:bg-gray-750 transition border border-gray-700"
+                className="ios-btn ios-card flex items-center justify-center gap-2"
+                style={{ padding: '14px', minHeight: '44px' }}
               >
-                <Download className="w-5 h-5 text-green-400" />
-                <span className="font-medium text-white text-sm">Export</span>
+                <Download className="w-5 h-5" style={{ color: '#30D158' }} />
+                <span className="font-semibold text-white text-sm">Export</span>
               </button>
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-gray-800 rounded-lg shadow-lg p-3 flex items-center justify-center gap-2 hover:bg-gray-750 transition border border-gray-700"
+                className="ios-btn ios-card flex items-center justify-center gap-2"
+                style={{ padding: '14px', minHeight: '44px' }}
               >
-                <Upload className="w-5 h-5 text-blue-400" />
-                <span className="font-medium text-white text-sm">Import</span>
+                <Upload className="w-5 h-5" style={{ color: '#0A84FF' }} />
+                <span className="font-semibold text-white text-sm">Import</span>
               </button>
 
               <input
